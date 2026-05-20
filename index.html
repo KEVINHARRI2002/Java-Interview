@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Java Interview Study Guide</title>
+<style>
+  :root {
+    --bg: #0f1117; --surface: #1a1d27; --surface2: #22263a;
+    --border: #2e3450; --text: #e2e8f0; --muted: #8892b0;
+    --accent: #64ffda; --blue: #4fc3f7; --orange: #ffb347;
+    --purple: #c792ea; --green: #a8ff78; --red: #ff6b6b;
+    --yellow: #ffd166; --pink: #f78fb3;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; line-height: 1.6; }
+  
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 20px 28px; position: sticky; top: 0; z-index: 100; }
+  header h1 { font-size: 18px; font-weight: 600; color: var(--accent); letter-spacing: 0.02em; }
+  header p { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+  .controls { padding: 16px 28px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .search { flex: 1; min-width: 200px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 7px 12px; color: var(--text); font-size: 13px; outline: none; }
+  .search:focus { border-color: var(--accent); }
+  .count { font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+  .tabs { padding: 12px 28px 0; display: flex; gap: 6px; flex-wrap: wrap; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .tab { padding: 6px 14px; border-radius: 6px 6px 0 0; font-size: 12px; font-weight: 500; cursor: pointer; border: 1px solid transparent; border-bottom: none; color: var(--muted); transition: all 0.15s; background: none; }
+  .tab:hover { color: var(--text); background: var(--surface2); }
+  .tab.active { background: var(--bg); color: var(--accent); border-color: var(--border); }
+
+  main { max-width: 900px; margin: 0 auto; padding: 20px 20px 40px; }
+
+  .section-header { display: flex; align-items: center; gap: 10px; margin: 24px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .section-header h2 { font-size: 14px; font-weight: 600; color: var(--text); }
+  .section-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  .qcard { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; overflow: hidden; transition: border-color 0.15s; }
+  .qcard:hover { border-color: #3e4570; }
+  .qcard.open { border-color: var(--accent); }
+  
+  .qhead { display: flex; align-items: flex-start; gap: 10px; padding: 13px 16px; cursor: pointer; user-select: none; }
+  .qnum { font-size: 11px; color: var(--muted); min-width: 22px; padding-top: 2px; font-family: monospace; }
+  .qtitle { flex: 1; font-size: 13px; color: var(--text); font-weight: 500; }
+  .qcat { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.05em; }
+  .arrow { font-size: 12px; color: var(--muted); transition: transform 0.2s; flex-shrink: 0; margin-top: 2px; }
+  .open .arrow { transform: rotate(180deg); }
+
+  .qbody { display: none; padding: 0 16px 14px 48px; }
+  .open .qbody { display: block; }
+  
+  .ans { font-size: 13px; color: var(--muted); line-height: 1.75; margin-bottom: 4px; }
+  .ans strong { color: var(--text); font-weight: 600; }
+  .ans code { background: var(--surface2); padding: 1px 5px; border-radius: 3px; font-family: monospace; font-size: 12px; color: var(--accent); }
+  
+  pre { background: #0d1117; border: 1px solid var(--border); border-radius: 6px; padding: 14px; margin-top: 10px; overflow-x: auto; font-size: 12px; line-height: 1.65; color: #cdd9e5; font-family: 'Cascadia Code', 'Fira Code', monospace; }
+  
+  .divider { margin: 10px 0; border: none; border-top: 1px dashed var(--border); }
+  .empty { text-align: center; padding: 48px; color: var(--muted); font-size: 13px; }
+
+  /* Tag colors */
+  .tag-core    { background: #1a2a4a; color: #4fc3f7; }
+  .tag-jvm     { background: #2a1a4a; color: #c792ea; }
+  .tag-conc    { background: #4a2a1a; color: #ffb347; }
+  .tag-spring  { background: #1a4a2a; color: #a8ff78; }
+  .tag-jpa     { background: #3a1a4a; color: #f78fb3; }
+  .tag-streams { background: #1a3a4a; color: #64ffda; }
+  .tag-system  { background: #4a1a2a; color: #ff6b6b; }
+  .tag-sql     { background: #3a3a1a; color: #ffd166; }
+  .tag-design  { background: #2a3a1a; color: #c3e88d; }
+  .tag-rest    { background: #3a1a3a; color: #f78fb3; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Java Interview Study Guide</h1>
+  <p>Topic-wise questions with answers and code snippets · Click any question to expand</p>
+</header>
+
+<div class="tabs" id="tabs"></div>
+
+<div class="controls">
+  <input class="search" id="search" placeholder="🔍  Search questions..." oninput="render()">
+  <span class="count" id="cnt"></span>
+</div>
+
+<main id="main"></main>
+
+<script>
+const Q = [
+
+// ══════════════════════════════════════════════════════
+// CORE JAVA
+// ══════════════════════════════════════════════════════
+{ cat:"Core Java", tag:"tag-core", q:"How is Java platform-independent? JVM vs JRE vs JDK.",
+  ans:`<strong>JVM</strong> executes bytecode — platform-specific (Windows JVM ≠ Linux JVM). <strong>JRE</strong> = JVM + core libraries (run programs). <strong>JDK</strong> = JRE + javac compiler + dev tools (write + compile + run).<br>Java compiles to <em>bytecode</em> (.class), not native machine code. Any OS with a JVM runs the same .class file — "write once, run anywhere."` },
+
+{ cat:"Core Java", tag:"tag-core", q:"What is a ClassLoader? ClassNotFoundException vs NoClassDefFoundError.",
+  ans:`<strong>ClassLoader</strong> loads .class files into JVM at runtime. Hierarchy: Bootstrap → Extension → Application (parent-delegation model).<br><br><strong>ClassNotFoundException</strong>: Checked exception; class not found on classpath at runtime (e.g., Class.forName() fails).<br><strong>NoClassDefFoundError</strong>: Error; class was present at compile-time but missing at runtime — common in incomplete JARs or deployment issues.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"String Pool and intern(). When does == work for Strings?",
+  ans:`String literals go into the <strong>String Pool</strong> (heap). Same literal → same pooled object.<br><code>String a = "hello";</code> → pool.<br><code>String b = new String("hello");</code> → new heap object, NOT in pool.<br><code>a == b</code> → false (different refs). <code>a.equals(b)</code> → true.<br><code>b.intern()</code> returns pool reference → <code>a == b.intern()</code> is true. Always use <code>.equals()</code> for String comparison.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"HashMap internals, threshold, and collision resolution.",
+  ans:`Array of Node&lt;&gt; buckets. Key's <code>hashCode()</code> determines bucket index via <code>hash & (capacity-1)</code>.<br><strong>Collision</strong>: Linked list at that bucket. Java 8+: Converts to Red-Black Tree when bucket size ≥ 8 (TREEIFY_THRESHOLD).<br><strong>Default capacity</strong>: 16. <strong>Load factor</strong>: 0.75. Resize when size &gt; 16 × 0.75 = 12 entries (rehash doubles capacity).<br><strong>Null key</strong>: One allowed (index 0). ConcurrentHashMap does NOT allow null keys.`,
+  code:`Map<String,Integer> map = new HashMap<>(); // capacity=16, LF=0.75
+// At 13 entries → internal array resizes to 32 (rehash all entries)` },
+
+{ cat:"Core Java", tag:"tag-core", q:"ArrayList vs Vector — default capacity and growth strategy.",
+  ans:`<strong>ArrayList</strong>: Default capacity 10. Grows by 50% (<code>oldSize + oldSize/2</code>). Not synchronized.<br><strong>Vector</strong>: Default capacity 10. Doubles on resize. All methods synchronized → thread-safe but slow.<br><br>Prefer ArrayList for single-threaded. For thread-safety use <code>CopyOnWriteArrayList</code> or <code>Collections.synchronizedList()</code>.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"equals() and hashCode() contract — why override both together?",
+  ans:`<strong>Contract</strong>: If <code>a.equals(b)</code> → <code>a.hashCode() == b.hashCode()</code> MUST hold.<br>Reverse: same hashCode doesn't guarantee equals (collision is normal).<br><br>If you override equals but not hashCode → HashMap/HashSet will store duplicates or fail to find objects. Always override both.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"Fail-fast vs Fail-safe iterators.",
+  ans:`<strong>Fail-fast</strong> (ArrayList, HashMap): Throws <code>ConcurrentModificationException</code> if collection is structurally modified during iteration. Uses internal <code>modCount</code> check.<br><strong>Fail-safe</strong> (CopyOnWriteArrayList, ConcurrentHashMap): Iterates over a snapshot. No exception but may not reflect latest changes.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"How to create an immutable class in Java?",
+  ans:`Rules: (1) Declare class <code>final</code>. (2) All fields <code>private final</code>. (3) No setters. (4) Initialize in constructor. (5) For mutable fields (List, Date) — store defensive copies; return unmodifiable views.`,
+  code:`public final class Money {
+    private final int amount;
+    private final List<String> tags;
+
+    public Money(int amount, List<String> tags) {
+        this.amount = amount;
+        this.tags = List.copyOf(tags);           // defensive copy on store
+    }
+    public int getAmount() { return amount; }
+    public List<String> getTags() {
+        return Collections.unmodifiableList(tags); // defensive copy on return
+    }
+}` },
+
+{ cat:"Core Java", tag:"tag-core", q:"Sealed Classes (Java 17) — purpose and usage.",
+  ans:`Restrict which classes can extend/implement a type. Enables exhaustive pattern matching in switch expressions.`,
+  code:`public sealed class Shape permits Circle, Rectangle, Triangle {}
+public final class Circle    extends Shape { double radius; }
+public non-sealed class Rectangle extends Shape { double w, h; }
+public final class Triangle  extends Shape { double base, h; }
+
+// Exhaustive switch — compiler enforces all cases covered
+double area = switch (shape) {
+    case Circle c    -> Math.PI * c.radius * c.radius;
+    case Rectangle r -> r.w * r.h;
+    case Triangle t  -> 0.5 * t.base * t.h;
+};` },
+
+{ cat:"Core Java", tag:"tag-core", q:"Private constructor — when and why use it?",
+  ans:`(1) <strong>Singleton</strong>: Prevent external instantiation, force use of <code>getInstance()</code>.<br>(2) <strong>Utility classes</strong> (like Math, Collections): All static methods, instantiation makes no sense.<br>(3) <strong>Factory methods</strong>: Control object creation — choose concrete type based on params.<br>(4) <strong>Builder pattern</strong>: Force callers to use the builder.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"Checked vs Unchecked exceptions. Try-with-resources.",
+  ans:`<strong>Checked</strong> (extends Exception): Compiler forces catch or declare. IOException, SQLException.<br><strong>Unchecked</strong> (extends RuntimeException): Optional. NullPointerException, IllegalArgumentException.<br><strong>Error</strong>: JVM-level, never catch. OutOfMemoryError, StackOverflowError.<br><strong>Try-with-resources</strong>: Auto-closes any <code>AutoCloseable</code> — cleaner than finally blocks.`,
+  code:`try (var reader = new BufferedReader(new FileReader("file.txt"));
+     var conn   = dataSource.getConnection()) {
+    return reader.readLine();
+} // Both closed automatically even on exception` },
+
+{ cat:"Core Java", tag:"tag-core", q:"AutoBoxing — what it is and its pitfalls.",
+  ans:`Auto-conversion between primitives and wrappers. <code>Integer i = 5</code> → <code>Integer.valueOf(5)</code>. <code>int x = i</code> → <code>i.intValue()</code>.<br><strong>Pitfalls</strong>: (1) NPE when unboxing null Integer to int. (2) <code>==</code> on Integer compares refs — cached only for -128 to 127. (3) Loop performance: boxing in tight loops creates garbage.`,
+  code:`Integer a = 127, b = 127; System.out.println(a == b); // true  (cached)
+Integer c = 128, d = 128; System.out.println(c == d); // false (new objects)
+// Rule: always use .equals() for Integer/Long/etc comparison` },
+
+{ cat:"Core Java", tag:"tag-core", q:"BigDecimal vs double for financial data.",
+  ans:`<code>double</code> uses binary floating point → precision loss: <code>0.1 + 0.2 = 0.30000000000000004</code>. Never use for money/tax.<br><code>BigDecimal</code>: Arbitrary precision. Construct from String, not double (<code>new BigDecimal(0.1)</code> still has the error).`,
+  code:`BigDecimal price = new BigDecimal("19.99");
+BigDecimal tax   = new BigDecimal("0.18");
+BigDecimal total = price.multiply(BigDecimal.ONE.add(tax))
+                        .setScale(2, RoundingMode.HALF_UP);
+System.out.println(total); // 23.59` },
+
+// ══════════════════════════════════════════════════════
+// JVM MEMORY
+// ══════════════════════════════════════════════════════
+{ cat:"JVM Memory", tag:"tag-jvm", q:"JVM memory areas — Heap, Stack, Metaspace, etc.",
+  ans:`<strong>Heap</strong>: Objects + instances. GC-managed. Young Gen (Eden, S0, S1) + Old Gen.<br><strong>Stack</strong>: Per-thread. Stack frames hold local vars, operand stack, method refs. LIFO.<br><strong>Metaspace</strong> (Java 8+): Class metadata, static fields, bytecode in native memory (replaced PermGen).<br><strong>PC Register</strong>: Current bytecode instruction pointer per thread.<br><strong>Native Method Stack</strong>: For JNI native calls.` },
+
+{ cat:"JVM Memory", tag:"tag-jvm", q:"Garbage Collection — how does it work? GC algorithms.",
+  ans:`<strong>Mark → Sweep → Compact</strong>: Mark live objects → free dead → compact to remove fragmentation.<br><strong>Minor GC</strong>: Eden fills → live objects moved to Survivor (S0↔S1) → after N cycles promoted to Old Gen.<br><strong>Major/Full GC</strong>: Old Gen collection. Slower, Stop-The-World pause.<br><br><strong>GC Algorithms</strong>:<br>• <strong>Serial GC</strong>: Single thread, small apps.<br>• <strong>Parallel GC</strong>: Multi-thread, throughput focus.<br>• <strong>G1 GC</strong>: Default Java 9+. Region-based, predictable pause targets.<br>• <strong>ZGC / Shenandoah</strong>: Sub-millisecond pauses for large heaps.` },
+
+{ cat:"JVM Memory", tag:"tag-jvm", q:"Strong, Weak, Soft, Phantom references — when to use each.",
+  ans:`<strong>Strong</strong>: Normal reference. GC never collects while reachable.<br><strong>Soft</strong>: GC collects only when memory is low. Ideal for caches.<br><strong>Weak</strong>: GC collects at next cycle if only weakly reachable. Used in WeakHashMap — entries auto-removed when key has no strong ref.<br><strong>Phantom</strong>: Post-finalization cleanup via ReferenceQueue. Better alternative to finalize().` },
+
+{ cat:"JVM Memory", tag:"tag-jvm", q:"How to debug OutOfMemoryError and memory leaks.",
+  ans:`<strong>Common OOM types</strong>: Java heap space (objects accumulate), GC overhead limit exceeded, Metaspace (too many classes).<br><br><strong>Debug steps</strong>:<br>1. Enable heap dump: <code>-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/dump.hprof</code><br>2. Analyze with <strong>Eclipse MAT</strong> or <strong>VisualVM</strong> — look at Retained Heap.<br>3. <strong>Common leak patterns</strong>: static collections growing unbounded, unclosed streams/connections, listeners not deregistered, ThreadLocal not cleared in thread pools.`,
+  code:`# JVM flags to add to startup
+-Xms512m -Xmx2g
+-XX:+HeapDumpOnOutOfMemoryError
+-XX:HeapDumpPath=/tmp/app-heap.hprof
+-verbose:gc -Xlog:gc*:file=/tmp/gc.log` },
+
+{ cat:"JVM Memory", tag:"tag-jvm", q:"PermGen vs Metaspace — why was Metaspace introduced?",
+  ans:`<strong>PermGen</strong> (Java ≤ 7): Fixed-size region (-XX:MaxPermSize). Stored class metadata + interned strings. Frequent OOM in apps with many classes (OSGi, heavy reflection, dynamic proxies).<br><strong>Metaspace</strong> (Java 8+): Uses native OS memory. Grows dynamically. Interned strings moved to main heap. No more PermGen OOM — but set limit to prevent unbounded growth: <code>-XX:MaxMetaspaceSize=256m</code>.` },
+
+{ cat:"JVM Memory", tag:"tag-jvm", q:"What is Escape Analysis? How does JVM use it to optimize?",
+  ans:`JVM analyzes whether an object can <em>escape</em> the method (returned, stored globally, passed to another thread). If it doesn't escape:<br>(1) <strong>Stack allocation</strong>: Allocate on stack instead of heap — no GC needed.<br>(2) <strong>Scalar replacement</strong>: Decompose object into primitive fields.<br>(3) <strong>Lock elision</strong>: Remove synchronization on non-shared objects.<br><br>Enabled by default since Java 7. Significantly reduces GC pressure for short-lived objects.` },
+
+// ══════════════════════════════════════════════════════
+// CONCURRENCY
+// ══════════════════════════════════════════════════════
+{ cat:"Concurrency", tag:"tag-conc", q:"Thread lifecycle states in Java.",
+  ans:`<strong>NEW</strong> → <strong>RUNNABLE</strong> → {<strong>BLOCKED</strong> | <strong>WAITING</strong> | <strong>TIMED_WAITING</strong>} → <strong>TERMINATED</strong><br><br><strong>BLOCKED</strong>: Waiting for monitor lock held by another thread (synchronized block).<br><strong>WAITING</strong>: Indefinitely — <code>wait()</code>, <code>join()</code>, <code>LockSupport.park()</code>.<br><strong>TIMED_WAITING</strong>: Same but with timeout — <code>sleep(ms)</code>, <code>wait(ms)</code>, <code>join(ms)</code>.` },
+
+{ cat:"Concurrency", tag:"tag-conc", q:"volatile vs synchronized vs Atomic classes.",
+  ans:`<strong>volatile</strong>: Visibility only. Reads/writes go to main memory, no CPU cache. No atomicity — <code>count++</code> is still a race condition.<br><strong>synchronized</strong>: Mutual exclusion + visibility. Heavier, involves OS-level locking.<br><strong>Atomic classes</strong>: Lock-free using CAS (Compare-And-Swap). Best for counters, flags, references.`,
+  code:`// volatile: simple flag visible to all threads
+private volatile boolean running = true;
+
+// synchronized: atomic read-modify-write
+synchronized (this) { counter++; }
+
+// AtomicInteger: lock-free, highest performance for single-variable ops
+AtomicInteger count = new AtomicInteger(0);
+int prev = count.getAndIncrement();  // atomic; no lock
+count.compareAndSet(expected, newValue);` },
+
+{ cat:"Concurrency", tag:"tag-conc", q:"ExecutorService types — when to use which?",
+  ans:`<strong>newFixedThreadPool(n)</strong>: Fixed n threads, unbounded LinkedBlockingQueue. Good for known workloads.<br><strong>newCachedThreadPool()</strong>: Unlimited threads, 60s idle timeout. Risky — can exhaust system under burst.<br><strong>newSingleThreadExecutor()</strong>: 1 thread, ordered execution.<br><strong>newScheduledThreadPool(n)</strong>: Cron-like scheduling.<br><br><strong>Best practice</strong>: Use <code>ThreadPoolExecutor</code> directly for full control — set bounded queue + rejection policy to apply backpressure.`,
+  code:`ThreadPoolExecutor executor = new ThreadPoolExecutor(
+    10, 50,                                   // core, max threads
+    60L, TimeUnit.SECONDS,                    // idle thread timeout
+    new ArrayBlockingQueue<>(1000),           // bounded queue (backpressure!)
+    new ThreadPoolExecutor.CallerRunsPolicy() // slow submitter when full
+);` },
+
+{ cat:"Concurrency", tag:"tag-conc", q:"Deadlock — causes, detection, and prevention.",
+  ans:`<strong>Deadlock</strong>: Thread A holds Lock 1, waits for Lock 2. Thread B holds Lock 2, waits for Lock 1. Circular wait.<br><strong>Detection</strong>: <code>jstack &lt;PID&gt;</code> or VisualVM → shows BLOCKED threads with cycle.<br><strong>Prevention strategies</strong>:<br>(1) Always acquire locks in a consistent global order.<br>(2) Use <code>tryLock(timeout)</code> and back off on failure.<br>(3) Prefer higher-level concurrency (ConcurrentHashMap, BlockingQueue) over manual locking.`,
+  code:`ReentrantLock lockA = new ReentrantLock();
+ReentrantLock lockB = new ReentrantLock();
+
+if (lockA.tryLock(1, TimeUnit.SECONDS)) {
+    try {
+        if (lockB.tryLock(1, TimeUnit.SECONDS)) {
+            try { /* safe critical section */ }
+            finally { lockB.unlock(); }
+        }
+    } finally { lockA.unlock(); }
+}` },
+
+{ cat:"Concurrency", tag:"tag-conc", q:"CompletableFuture — composition and error handling.",
+  ans:`Non-blocking, composable async computation. Replaces Future's blocking <code>get()</code>.`,
+  code:`CompletableFuture<Order> result = CompletableFuture
+    .supplyAsync(() -> userService.findUser(userId))   // async, runs in ForkJoinPool
+    .thenApply(user -> enrichUser(user))                // sync transform
+    .thenCompose(user -> orderService.getOrders(user))  // flatMap (returns CF)
+    .exceptionally(ex -> Order.empty());                // fallback on error
+
+// Combine multiple futures
+CompletableFuture.allOf(f1, f2, f3)
+    .thenRun(() -> System.out.println("all done"));
+
+CompletableFuture.anyOf(f1, f2)
+    .thenAccept(first -> System.out.println("fastest: " + first));` },
+
+{ cat:"Concurrency", tag:"tag-conc", q:"ConcurrentHashMap internals. Why no null keys?",
+  ans:`Java 8+: Array of Node + CAS operations for lock-free reads. Synchronized on individual bucket heads (not entire map) for writes — high concurrency.<br><br><strong>No null keys/values</strong>: In concurrent context, <code>map.get(key) == null</code> is ambiguous — absent key OR null value stored? This ambiguity is eliminated by disallowing null. HashMap allows 1 null key since it's single-threaded.` },
+
+// ══════════════════════════════════════════════════════
+// STREAMS & FP
+// ══════════════════════════════════════════════════════
+{ cat:"Streams & FP", tag:"tag-streams", q:"Streams API — lazy evaluation, intermediate vs terminal operations.",
+  ans:`Streams are lazy sequences supporting functional-style ops. Not a data structure — pipeline executes only when a terminal operation is called.<br><br><strong>Intermediate</strong> (lazy, return Stream): filter, map, flatMap, distinct, sorted, limit, skip, peek.<br><strong>Terminal</strong> (eager, triggers pipeline): collect, forEach, reduce, count, findFirst, anyMatch, min, max.<br><br>Short-circuit ops (findFirst, anyMatch, limit) stop processing as soon as the answer is known.` },
+
+{ cat:"Streams & FP", tag:"tag-streams", q:"map() vs flatMap() — with examples.",
+  ans:`<strong>map()</strong>: 1-to-1 transform. If mapper returns a collection → you get Stream&lt;List&lt;T&gt;&gt; (still nested).<br><strong>flatMap()</strong>: 1-to-many then flattens → Stream&lt;T&gt;.`,
+  code:`List<List<Integer>> nested = List.of(List.of(1, 2), List.of(3, 4));
+
+// map → Stream<List<Integer>> (nested, probably not what you want)
+nested.stream().map(l -> l.stream());
+
+// flatMap → Stream<Integer> (flattened)
+List<Integer> flat = nested.stream()
+    .flatMap(Collection::stream)
+    .collect(Collectors.toList()); // [1, 2, 3, 4]
+
+// Real-world: get all tags from all posts
+List<String> tags = posts.stream()
+    .flatMap(post -> post.getTags().stream())
+    .distinct()
+    .collect(Collectors.toList());` },
+
+{ cat:"Streams & FP", tag:"tag-streams", q:"Find 2nd highest salary using Stream API.",
+  code:`// Using distinct + sorted
+Optional<Integer> secondHighest = employees.stream()
+    .map(Employee::getSalary)
+    .distinct()
+    .sorted(Comparator.reverseOrder())
+    .skip(1)
+    .findFirst();
+
+secondHighest.ifPresentOrElse(
+    s -> System.out.println("2nd highest salary: " + s),
+    () -> System.out.println("Not enough distinct salaries")
+);` },
+
+{ cat:"Streams & FP", tag:"tag-streams", q:"Find duplicates in a list / filter by length / group by department.",
+  code:`List<String> list = List.of("a", "b", "a", "c", "b", "b");
+
+// 1. Find duplicates
+Set<String> seen = new HashSet<>();
+Set<String> duplicates = list.stream()
+    .filter(e -> !seen.add(e))      // add() returns false for duplicates
+    .collect(Collectors.toSet());   // {a, b}
+
+// 2. Filter strings with length > 4
+List<String> long_words = words.stream()
+    .filter(s -> s.length() > 4)
+    .collect(Collectors.toList());
+
+// 3. Group employees by department
+Map<String, List<Employee>> byDept = employees.stream()
+    .collect(Collectors.groupingBy(Employee::getDepartment));
+
+// 4. Average salary per department
+Map<String, Double> avgSalary = employees.stream()
+    .collect(Collectors.groupingBy(
+        Employee::getDepartment,
+        Collectors.averagingInt(Employee::getSalary)
+    ));` },
+
+{ cat:"Streams & FP", tag:"tag-streams", q:"When to use parallel streams? Gotchas.",
+  ans:`<strong>Use parallel when</strong>: Large dataset (100k+ elements), CPU-bound ops, operations are stateless/independent, collection is easily splittable (ArrayList, arrays).<br><br><strong>Avoid parallel when</strong>: I/O-bound work (use CompletableFuture instead), small data, shared mutable state, ordered output required (use forEachOrdered — but negates speedup), LinkedList (poor splittability).` },
+
+{ cat:"Streams & FP", tag:"tag-streams", q:"Functional interface — definition, default/static methods, common examples.",
+  ans:`Exactly one abstract method. <code>@FunctionalInterface</code> annotation enforces this at compile time.<br>Can have any number of <code>default</code> and <code>static</code> methods — they don't count as abstract.<br><br><strong>Common built-in</strong>: Supplier&lt;T&gt; (get), Consumer&lt;T&gt; (accept), Function&lt;T,R&gt; (apply), Predicate&lt;T&gt; (test), BiFunction&lt;T,U,R&gt;, Runnable (run).`,
+  code:`@FunctionalInterface
+interface Transformer<T, R> {
+    R transform(T input);            // single abstract method → lambda target
+    default void log(T input) { System.out.println("Input: " + input); }
+    static <T> Transformer<T,T> identity() { return t -> t; }
+}
+
+// Use as lambda
+Transformer<String, Integer> len = String::length;
+System.out.println(len.transform("hello")); // 5` },
+
+// ══════════════════════════════════════════════════════
+// SPRING BOOT
+// ══════════════════════════════════════════════════════
+{ cat:"Spring Boot", tag:"tag-spring", q:"Auto-configuration — how does Spring Boot wire itself?",
+  ans:`<code>@SpringBootApplication</code> = <code>@Configuration</code> + <code>@EnableAutoConfiguration</code> + <code>@ComponentScan</code>.<br><br><code>@EnableAutoConfiguration</code> loads all AutoConfiguration classes listed in <code>META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports</code> (Spring Boot 3+).<br><br>Each auto-config uses conditional annotations to decide whether to activate:<br>• <code>@ConditionalOnClass</code>: Only if library is on classpath.<br>• <code>@ConditionalOnMissingBean</code>: Only if you haven't defined your own bean.<br>• <code>@ConditionalOnProperty</code>: Only if a property is set.<br><br>Result: Add spring-boot-starter-data-jpa → DataSource, EntityManagerFactory, TransactionManager auto-configured from <code>application.properties</code>.` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"Bean lifecycle. @PostConstruct and @PreDestroy.",
+  ans:`Order: Instantiate → Inject dependencies → <code>@PostConstruct</code> (init) → Bean in use → <code>@PreDestroy</code> (destroy) → Garbage collected.`,
+  code:`@Component
+public class CacheService {
+    @Autowired
+    private RedisTemplate<String, Object> redis;
+
+    @PostConstruct
+    public void warmUp() {
+        // Called after all dependencies injected — safe to use them here
+        redis.opsForValue().set("startup", "true");
+    }
+
+    @PreDestroy
+    public void flush() {
+        // Called before bean destroyed — clean up resources
+        redis.getConnectionFactory().getConnection().close();
+    }
+}` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"@Transactional internals. Propagation types. The self-invocation trap.",
+  ans:`Spring wraps the bean in a <strong>proxy</strong>. Proxy intercepts the call → begins transaction → runs method → commit/rollback. The actual bean object has no transaction logic.<br><br><strong>Propagation types</strong>:<br>• <strong>REQUIRED</strong> (default): Join existing or create new.<br>• <strong>REQUIRES_NEW</strong>: Suspend existing, always new transaction.<br>• <strong>NESTED</strong>: Savepoint within current transaction.<br>• <strong>SUPPORTS</strong>: Use existing if present; non-transactional otherwise.<br><br><strong>Self-invocation trap</strong>: Calling a @Transactional method from within the same class bypasses the proxy → transaction won't start. Fix: inject self or use AspectJ weaving.` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"Global exception handling — @ControllerAdvice vs @ExceptionHandler.",
+  code:`@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleNotFound(ResourceNotFoundException ex, HttpServletRequest req) {
+        return ErrorResponse.of(404, ex.getMessage(), req.getRequestURI());
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleValidation(ConstraintViolationException ex) {
+        String msg = ex.getConstraintViolations().stream()
+            .map(v -> v.getPropertyPath() + ": " + v.getMessage())
+            .collect(Collectors.joining(", "));
+        return ErrorResponse.of(400, msg, null);
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleAll(Exception ex) {
+        log.error("Unhandled exception", ex);
+        return ErrorResponse.of(500, "Internal server error", null);
+    }
+}` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"@Async internals. How to configure a proper thread pool for it.",
+  ans:`@Async proxies the method call and submits it to a TaskExecutor. Default is <code>SimpleAsyncTaskExecutor</code> which creates a new thread per call — never use in production.<br><br>Must have <code>@EnableAsync</code> on a config class. Same proxy rule as @Transactional: must call from outside the class, method must be public.`,
+  code:`@Configuration
+@EnableAsync
+public class AsyncConfig implements AsyncConfigurer {
+
+    @Override
+    public Executor getAsyncExecutor() {
+        ThreadPoolTaskExecutor exec = new ThreadPoolTaskExecutor();
+        exec.setCorePoolSize(10);
+        exec.setMaxPoolSize(50);
+        exec.setQueueCapacity(500);
+        exec.setThreadNamePrefix("async-");
+        exec.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        exec.initialize();
+        return exec;
+    }
+}
+
+@Service
+public class EmailService {
+    @Async
+    public CompletableFuture<Boolean> sendEmail(String to) {
+        // Runs in async thread pool
+        emailClient.send(to);
+        return CompletableFuture.completedFuture(true);
+    }
+}` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"WebClient vs RestTemplate vs Feign Client — choose which?",
+  ans:`<strong>RestTemplate</strong>: Synchronous, blocking. In maintenance mode (won't get new features). Simple and familiar.<br><strong>WebClient</strong>: Reactive, non-blocking. Works in both reactive (WebFlux) and traditional (MVC) stacks. Supports streaming. Preferred for new code.<br><strong>Feign Client</strong>: Declarative — define an interface with annotations, Spring generates the implementation. Integrates with service discovery, load balancing, circuit breaker out of the box.`,
+  code:`// WebClient (reactive, non-blocking)
+webClient.get()
+    .uri("/users/{id}", userId)
+    .retrieve()
+    .bodyToMono(User.class)
+    .timeout(Duration.ofSeconds(3))
+    .onErrorReturn(User.defaultUser());
+
+// Feign (declarative — recommended for microservices)
+@FeignClient(name = "user-service", fallback = UserClientFallback.class)
+public interface UserClient {
+    @GetMapping("/users/{id}")
+    User getUser(@PathVariable("id") Long id);
+}` },
+
+// ══════════════════════════════════════════════════════
+// JPA / HIBERNATE
+// ══════════════════════════════════════════════════════
+{ cat:"JPA / Hibernate", tag:"tag-jpa", q:"JPA vs Hibernate. What is the persistence context?",
+  ans:`<strong>JPA</strong>: Java specification (jakarta.persistence). Defines API, JPQL, annotations. Not an implementation.<br><strong>Hibernate</strong>: Most popular JPA implementation. Also has its own native API (Session, HQL).<br><br><strong>Persistence context</strong>: First-level cache — a unit-of-work scoped to the current transaction. All managed entities are tracked here. Hibernate syncs changes to DB on flush.` },
+
+{ cat:"JPA / Hibernate", tag:"tag-jpa", q:"Entity lifecycle: Transient, Managed, Detached, Removed.",
+  ans:`<strong>Transient</strong>: New object. No DB row, not in persistence context.<br><strong>Managed</strong>: In persistence context. Dirty checking active — changes auto-saved on flush.<br><strong>Detached</strong>: Context was closed or entity was evicted. DB row exists but changes NOT tracked. Call <code>merge()</code> to re-attach.<br><strong>Removed</strong>: Scheduled for DELETE. Executed on flush/commit.` },
+
+{ cat:"JPA / Hibernate", tag:"tag-jpa", q:"N+1 query problem — what it is and how to fix it.",
+  ans:`<strong>Problem</strong>: Query 1 fetches N orders → Hibernate fires N separate queries to load each order's customer. Total: N+1 queries.<br><br><strong>Solutions</strong>:<br>(1) JOIN FETCH in JPQL — single query loads both.<br>(2) @EntityGraph — declarative, avoids modifying query.<br>(3) @BatchSize — fetch in batches of N.<br>(4) DTO projection — select only needed columns in one query.`,
+  code:`// 1. JOIN FETCH
+@Query("SELECT o FROM Order o JOIN FETCH o.customer WHERE o.status = :status")
+List<Order> findByStatus(@Param("status") String status);
+
+// 2. EntityGraph (declarative)
+@EntityGraph(attributePaths = {"customer", "items"})
+List<Order> findByStatus(String status);
+
+// 3. Batch fetching (global or per entity)
+@Entity @BatchSize(size = 20)
+public class Customer { ... }
+
+// 4. DTO projection (most efficient for read-only views)
+@Query("SELECT new com.app.OrderDTO(o.id, o.total, c.name) " +
+       "FROM Order o JOIN o.customer c WHERE o.status = :status")
+List<OrderDTO> findOrderSummaries(@Param("status") String status);` },
+
+{ cat:"JPA / Hibernate", tag:"tag-jpa", q:"Optimistic vs Pessimistic locking.",
+  ans:`<strong>Optimistic</strong>: No DB lock. Uses a version column. On update, checks version matches — if another transaction updated first → OptimisticLockException. Best for low-contention, read-heavy systems.<br><strong>Pessimistic</strong>: DB-level SELECT FOR UPDATE lock. Blocks other transactions. Safer for high-contention, financial operations.`,
+  code:`// Optimistic locking
+@Entity
+public class Product {
+    @Version
+    private int version;  // auto-incremented on each UPDATE; checked on write
+}
+
+// Pessimistic locking
+@Lock(LockModeType.PESSIMISTIC_WRITE)
+@Query("SELECT p FROM Product p WHERE p.id = :id")
+Product findByIdForUpdate(@Param("id") Long id);
+// Generates: SELECT ... FROM product WHERE id=? FOR UPDATE` },
+
+{ cat:"JPA / Hibernate", tag:"tag-jpa", q:"Cascade types — when to use ALL vs specific ones?",
+  ans:`<strong>CascadeType.ALL</strong>: Propagates PERSIST, MERGE, REMOVE, REFRESH, DETACH. Safe only when child has no independent lifecycle (e.g., OrderItem — meaningless without Order).<br><br><strong>Dangerous patterns</strong>: ALL on @ManyToMany or @ManyToOne — accidental REMOVE on shared entities. Prefer explicit: <code>cascade = {PERSIST, MERGE}</code> for most cases.` },
+
+{ cat:"JPA / Hibernate", tag:"tag-jpa", q:"save() vs saveAndFlush(). Dirty checking and flush().",
+  ans:`<strong>Dirty checking</strong>: Hibernate snapshots entity state on load. On flush, compares current vs snapshot → issues UPDATE automatically. No need to call save() for already-managed entities.<br><strong>save()</strong>: Returns managed entity. SQL deferred to flush time (end of transaction).<br><strong>saveAndFlush()</strong>: Forces immediate SQL flush. Use when you need the DB state visible within the same transaction (e.g., before calling a stored procedure or native query).` },
+
+// ══════════════════════════════════════════════════════
+// SYSTEM DESIGN
+// ══════════════════════════════════════════════════════
+{ cat:"System Design", tag:"tag-system", q:"Saga pattern — Choreography vs Orchestration.",
+  ans:`<strong>Problem</strong>: Distributed transactions across microservices — no 2-phase commit. Saga = chain of local transactions with compensating transactions on failure.<br><br><strong>Choreography</strong>: Services react to events (Order created → Inventory service listens → Reserve stock → emit event → …). No central coordinator. Loosely coupled but hard to trace the overall flow.<br><strong>Orchestration</strong>: Central saga orchestrator issues commands to each service. Easier to track, visualize, and debug. Single point of failure.` },
+
+{ cat:"System Design", tag:"tag-system", q:"Circuit Breaker pattern — states and Spring Boot implementation.",
+  ans:`Prevents cascading failures when a downstream service is degraded.<br><br><strong>CLOSED</strong>: Normal operation. Failures counted.<br><strong>OPEN</strong>: Threshold exceeded → requests immediately fail (fallback returned). No calls to downstream.<br><strong>HALF-OPEN</strong>: After timeout, allow limited probe requests. If successful → CLOSED. If fail → OPEN.`,
+  code:`// Resilience4j with Spring Boot
+@CircuitBreaker(name = "inventoryService", fallbackMethod = "fallback")
+public InventoryStatus checkInventory(Long productId) {
+    return inventoryClient.getStock(productId);
+}
+
+public InventoryStatus fallback(Long productId, Exception ex) {
+    log.warn("Circuit open for product {}", productId, ex);
+    return InventoryStatus.UNKNOWN; // graceful degradation
+}
+
+// application.yml
+resilience4j.circuitbreaker.instances.inventoryService:
+  failureRateThreshold: 50        # open if 50% of last N calls fail
+  slowCallRateThreshold: 80
+  waitDurationInOpenState: 30s
+  slidingWindowSize: 20` },
+
+{ cat:"System Design", tag:"tag-system", q:"Idempotency — how to implement it in POST APIs.",
+  ans:`Client sends a unique <code>Idempotency-Key</code> header with each request. Server stores (key → response) in Redis with TTL. On duplicate key → return cached response without re-processing.`,
+  code:`@PostMapping("/payments")
+public ResponseEntity<Payment> pay(
+        @RequestHeader("Idempotency-Key") String key,
+        @RequestBody @Valid PaymentRequest req) {
+
+    // Check idempotency store first
+    Payment cached = idempotencyStore.get(key);
+    if (cached != null) {
+        return ResponseEntity.ok(cached); // return same result
+    }
+
+    Payment result = paymentService.process(req);
+
+    // Store result with 24h TTL
+    idempotencyStore.put(key, result, Duration.ofHours(24));
+    return ResponseEntity.status(HttpStatus.CREATED).body(result);
+}` },
+
+{ cat:"System Design", tag:"tag-system", q:"Distributed scheduler — prevent duplicate job execution across instances.",
+  ans:`<strong>Problem</strong>: @Scheduled fires on ALL instances in a cluster.<br><br><strong>Options</strong>:<br>(1) <strong>ShedLock</strong>: Distributed lock in DB/Redis. One node acquires lock, others skip. Simple, Spring Boot native.<br>(2) <strong>Quartz Scheduler + JDBC JobStore</strong>: Cluster-aware, guaranteed single execution, supports misfire handling.<br>(3) <strong>Kubernetes CronJob</strong>: Run scheduler as a separate single-pod Deployment.`,
+  code:`// ShedLock (simplest approach)
+@Bean
+public LockProvider lockProvider(DataSource dataSource) {
+    return new JdbcTemplateLockProvider(dataSource);
+}
+
+@Scheduled(cron = "0 0 * * * *")
+@SchedulerLock(name = "hourlyReport",
+               lockAtLeastFor = "PT55M",
+               lockAtMostFor = "PT1H")
+public void generateReport() {
+    // Only runs on one node per hour
+}` },
+
+{ cat:"System Design", tag:"tag-system", q:"How to debug slow API / high latency under load.",
+  ans:`<strong>Step 1 — Identify the bottleneck</strong>:<br>• <strong>DB</strong>: Check slow query log, N+1 pattern, missing indexes (EXPLAIN plan).<br>• <strong>Thread pool exhaustion</strong>: Thread dump → many BLOCKED threads.<br>• <strong>GC pauses</strong>: Check GC logs for long STW pauses.<br>• <strong>External service</strong>: Check timeouts, circuit breaker metrics.<br><br><strong>Step 2 — Fix</strong>:<br>• Add caching (Redis) for frequently read stable data.<br>• Async processing for non-critical paths.<br>• Tune HikariCP pool size.<br>• Add pagination to unbounded queries.<br>• Optimize SQL with proper indexes.` },
+
+// ══════════════════════════════════════════════════════
+// REST & SECURITY
+// ══════════════════════════════════════════════════════
+{ cat:"REST & Security", tag:"tag-rest", q:"PUT vs POST vs PATCH — idempotency.",
+  ans:`<strong>POST</strong>: Create. NOT idempotent (2× POST = 2 resources).<br><strong>PUT</strong>: Replace full resource. Idempotent.<br><strong>PATCH</strong>: Partial update. Not strictly idempotent (e.g., increment field) but usually treated as such.<br><strong>GET</strong>: Safe + idempotent.<br><strong>DELETE</strong>: Idempotent (deleting already-deleted → 404, state is same: resource gone).` },
+
+{ cat:"REST & Security", tag:"tag-rest", q:"JWT authentication flow. JWT vs OAuth2.",
+  ans:`<strong>JWT flow</strong>: (1) Client sends credentials. (2) Server validates, returns signed JWT (header.payload.signature, base64url). (3) Client sends JWT in <code>Authorization: Bearer &lt;token&gt;</code>. (4) Server validates signature (no DB lookup) → stateless, scalable.<br><br><strong>JWT</strong>: Token <em>format</em>. Self-contained, stateless. Can be used standalone.<br><strong>OAuth2</strong>: Authorization <em>framework/protocol</em>. Defines flows for delegated access (Authorization Code, Client Credentials, etc.). Often uses JWT as the token format.` },
+
+// ══════════════════════════════════════════════════════
+// DATABASE & SQL
+// ══════════════════════════════════════════════════════
+{ cat:"Database & SQL", tag:"tag-sql", q:"ACID properties and transaction isolation levels.",
+  ans:`<strong>ACID</strong>: Atomicity (all or nothing), Consistency (valid state transitions), Isolation (concurrent transactions don't interfere), Durability (committed data persists on crash).<br><br><strong>Isolation levels</strong>:<br>• <strong>READ_UNCOMMITTED</strong>: Dirty reads possible.<br>• <strong>READ_COMMITTED</strong> (default PostgreSQL): Prevents dirty reads.<br>• <strong>REPEATABLE_READ</strong> (default MySQL/InnoDB): Prevents dirty + non-repeatable reads.<br>• <strong>SERIALIZABLE</strong>: Prevents all anomalies (phantom reads too). Slowest.` },
+
+{ cat:"Database & SQL", tag:"tag-sql", q:"Indexing — selectivity, composite indexes, leftmost prefix rule.",
+  ans:`<strong>Index</strong>: B-tree for fast lookup. Speeds reads, slows writes (index maintained on every write).<br><strong>Selectivity</strong>: Cardinality / total rows. High selectivity (email, user_id) → very effective. Low selectivity (is_active boolean) → optimizer may prefer full scan.<br><strong>Composite index (col1, col2)</strong>: Useful for queries filtering/sorting on both. <em>Leftmost prefix rule</em>: Query on col1 alone → uses index. Query on col2 alone → does NOT use index.` },
+
+{ cat:"Database & SQL", tag:"tag-sql", q:"Useful SQL queries — employees hired last 30 days, percentage per department.",
+  code:`-- Employees hired in the last 30 days
+SELECT employee_id, name, hire_date, department
+FROM employees
+WHERE hire_date >= CURRENT_DATE - INTERVAL '30 days'
+ORDER BY hire_date DESC;
+
+-- Percentage of employees per department (window function)
+SELECT department,
+       COUNT(*)                                          AS headcount,
+       ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) AS pct
+FROM employees
+GROUP BY department
+ORDER BY pct DESC;
+
+-- 2nd highest salary (SQL approach)
+SELECT MAX(salary) AS second_highest
+FROM employees
+WHERE salary < (SELECT MAX(salary) FROM employees);
+
+-- Employees hired last 30 days count by department
+SELECT department, COUNT(*) AS new_hires
+FROM employees
+WHERE hire_date >= CURRENT_DATE - INTERVAL '30 days'
+GROUP BY department
+HAVING COUNT(*) > 0;` },
+
+{ cat:"Database & SQL", tag:"tag-sql", q:"HikariCP connection pool — tuning and exhaustion fixes.",
+  ans:`<strong>Exhaustion causes</strong>: Long transactions holding connections, connection leaks (not returned), pool undersized, N+1 queries causing many queries per request.<br><strong>Fixes</strong>: Tune pool size (typically: cores × 2 + disk spindles), set connectionTimeout to fail fast, ensure connections always returned (Spring @Transactional handles this), use read replicas for read-only queries.`,
+  code:`# application.properties (HikariCP)
+spring.datasource.hikari.maximum-pool-size=20
+spring.datasource.hikari.minimum-idle=5
+spring.datasource.hikari.connection-timeout=30000    # 30s — fail fast
+spring.datasource.hikari.idle-timeout=600000         # 10min
+spring.datasource.hikari.max-lifetime=1800000        # 30min (< DB wait_timeout)
+spring.datasource.hikari.leak-detection-threshold=60000 # log connections open > 1min` },
+
+// ══════════════════════════════════════════════════════
+// DESIGN PATTERNS
+// ══════════════════════════════════════════════════════
+{ cat:"Design Patterns", tag:"tag-design", q:"Singleton — thread-safe implementations.",
+  code:`// Option 1: Double-checked locking (Java 5+)
+public class AppConfig {
+    private static volatile AppConfig instance;
+    private AppConfig() {}
+
+    public static AppConfig getInstance() {
+        if (instance == null) {                  // first check (no lock)
+            synchronized (AppConfig.class) {
+                if (instance == null) {          // second check (with lock)
+                    instance = new AppConfig();
+                }
+            }
+        }
+        return instance;
+    }
+}
+
+// Option 2: Initialization-on-demand holder (preferred — lazy, thread-safe, no sync overhead)
+public class AppConfig {
+    private AppConfig() {}
+    private static class Holder { static final AppConfig INSTANCE = new AppConfig(); }
+    public static AppConfig getInstance() { return Holder.INSTANCE; }
+}
+
+// Option 3: Enum singleton (simplest, also handles serialization)
+public enum AppConfig {
+    INSTANCE;
+    public void doSomething() { ... }
+}` },
+
+{ cat:"Design Patterns", tag:"tag-design", q:"Builder pattern — when and why to use it.",
+  ans:`Use when: (1) Object has many parameters, many of which are optional. (2) You want an immutable object. (3) Constructor telescoping becomes unreadable.<br>Avoids: <code>new Pizza(size, crust, null, true, false, null, true)</code> — parameter order is unclear.`,
+  code:`// Manual builder (or use Lombok @Builder)
+public final class HttpRequest {
+    private final String url;
+    private final String method;
+    private final Map<String,String> headers;
+    private final String body;
+    private final int timeoutMs;
+
+    private HttpRequest(Builder b) {
+        this.url = Objects.requireNonNull(b.url);
+        this.method = b.method;
+        this.headers = Map.copyOf(b.headers);
+        this.body = b.body;
+        this.timeoutMs = b.timeoutMs;
+    }
+
+    public static Builder builder(String url) { return new Builder(url); }
+
+    public static class Builder {
+        private final String url;
+        private String method = "GET";
+        private Map<String,String> headers = new HashMap<>();
+        private String body;
+        private int timeoutMs = 5000;
+
+        private Builder(String url) { this.url = url; }
+        public Builder method(String m) { this.method = m; return this; }
+        public Builder header(String k, String v) { headers.put(k, v); return this; }
+        public Builder body(String b) { this.body = b; return this; }
+        public Builder timeout(int ms) { this.timeoutMs = ms; return this; }
+        public HttpRequest build() { return new HttpRequest(this); }
+    }
+}
+
+// Usage — self-documenting, immutable
+HttpRequest req = HttpRequest.builder("https://api.example.com/users")
+    .method("POST")
+    .header("Authorization", "Bearer " + token)
+    .body(jsonBody)
+    .timeout(3000)
+    .build();` },
+
+{ cat:"Design Patterns", tag:"tag-design", q:"Factory Method vs Abstract Factory.",
+  ans:`<strong>Factory Method</strong>: Define an interface for creating ONE product type. Subclasses decide the concrete implementation. Hides instantiation logic from the caller.<br><strong>Abstract Factory</strong>: Create families of related objects (multiple product types) without specifying concrete classes.`,
+  code:`// Factory Method — creates one type of Notification
+public interface NotificationSender {
+    Notification create(String type);
+}
+
+@Component
+public class NotificationFactory implements NotificationSender {
+    public Notification create(String type) {
+        return switch (type) {
+            case "EMAIL" -> new EmailNotification();
+            case "SMS"   -> new SmsNotification();
+            case "PUSH"  -> new PushNotification();
+            default -> throw new IllegalArgumentException("Unknown: " + type);
+        };
+    }
+}
+
+// Abstract Factory — creates a FAMILY: Button + CheckBox matching a UI theme
+interface UIFactory {
+    Button createButton();
+    CheckBox createCheckBox();
+}
+class MaterialUIFactory implements UIFactory { ... }
+class FluentUIFactory  implements UIFactory { ... }` },
+];
+
+// ─── CONFIG ─────────────────────────────────────────
+const CATS = ["All", ...new Set(Q.map(q => q.cat))];
+const CAT_COLORS = {
+  "Core Java":     "#4fc3f7", "JVM Memory": "#c792ea", "Concurrency": "#ffb347",
+  "Streams & FP":  "#64ffda", "Spring Boot": "#a8ff78", "JPA / Hibernate": "#f78fb3",
+  "System Design": "#ff6b6b", "Database & SQL": "#ffd166", "Design Patterns": "#c3e88d",
+  "REST & Security":"#f78fb3"
+};
+const CAT_DOT = {
+  "Core Java":"#4fc3f7","JVM Memory":"#c792ea","Concurrency":"#ffb347",
+  "Streams & FP":"#64ffda","Spring Boot":"#a8ff78","JPA / Hibernate":"#f78fb3",
+  "System Design":"#ff6b6b","Database & SQL":"#ffd166","Design Patterns":"#c3e88d",
+  "REST & Security":"#f78fb3"
+};
+
+let activeCat = "All", openId = null;
+
+// ─── TABS ───────────────────────────────────────────
+function renderTabs() {
+  const el = document.getElementById("tabs");
+  el.innerHTML = CATS.map(c => {
+    const active = c === activeCat;
+    return `<button class="tab${active?" active":""}" onclick="setTab('${c.replace(/'/g,"\\'")}')">${c}</button>`;
+  }).join("");
+}
+function setTab(c) { activeCat = c; openId = null; render(); }
+
+// ─── FILTER ─────────────────────────────────────────
+function filtered() {
+  const search = (document.getElementById("search").value || "").toLowerCase();
+  return Q.filter(q => {
+    const catOk = activeCat === "All" || q.cat === activeCat;
+    const qOk = !search || q.q.toLowerCase().includes(search) || q.cat.toLowerCase().includes(search) || (q.ans||"").toLowerCase().includes(search);
+    return catOk && qOk;
+  });
+}
+
+// ─── RENDER ─────────────────────────────────────────
+function toggle(id) { openId = openId === id ? null : id; render(); }
+
+function render() {
+  renderTabs();
+  const list = filtered();
+  document.getElementById("cnt").textContent = list.length + " questions";
+
+  const byCat = {};
+  list.forEach(q => { (byCat[q.cat] = byCat[q.cat] || []).push(q); });
+
+  const main = document.getElementById("main");
+  if (!list.length) { main.innerHTML = '<div class="empty">No questions match. Try a different search.</div>'; return; }
+
+  let num = 0;
+  main.innerHTML = Object.entries(byCat).map(([cat, qs]) => {
+    const color = CAT_DOT[cat] || "#8892b0";
+    const cards = qs.map(q => {
+      num++;
+      const n = num;
+      const isOpen = openId === q.q;
+      return `<div class="qcard${isOpen?" open":""}">
+        <div class="qhead" onclick='toggle(${JSON.stringify(q.q)})'>
+          <span class="qnum">${String(n).padStart(2,"0")}</span>
+          <span class="qtitle">${q.q}</span>
+          <span class="qcat ${q.tag}" style="">${q.cat}</span>
+          <span class="arrow">▼</span>
+        </div>
+        ${isOpen ? `<div class="qbody">
+          ${q.ans ? `<div class="ans">${q.ans}</div>` : ""}
+          ${q.code ? `<hr class="divider"><pre>${escHtml(q.code)}</pre>` : ""}
+        </div>` : ""}
+      </div>`;
+    }).join("");
+
+    return `<div class="section-header">
+      <span class="section-dot" style="background:${color}"></span>
+      <h2>${cat}</h2>
+      <span style="font-size:12px;color:#8892b0">${qs.length} questions</span>
+    </div>${cards}`;
+  }).join("");
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+render();
+</script>
+</body>
+</html>
