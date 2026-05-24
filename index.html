@@ -94,13 +94,13 @@ const Q = [
 // CORE JAVA
 // ══════════════════════════════════════════════════════
 { cat:"Core Java", tag:"tag-core", q:"How is Java platform-independent? JVM vs JRE vs JDK.",
-  ans:`<strong>JVM</strong> executes bytecode — platform-specific (Windows JVM ≠ Linux JVM). <strong>JRE</strong> = JVM + core libraries (run programs). <strong>JDK</strong> = JRE + javac compiler + dev tools (write + compile + run).<br>Java compiles to <em>bytecode</em> (.class), not native machine code. Any OS with a JVM runs the same .class file — "write once, run anywhere."` },
+  ans:`Java source is compiled to <strong>bytecode</strong> (.class files), which is an intermediate, platform-neutral format. The <strong>JVM</strong> is platform-specific and interprets or JIT-compiles bytecode on each OS. This is why Java is considered platform-independent: you compile once and run anywhere a compatible JVM exists.<br><br><strong>JRE</strong>: Java Runtime Environment. Contains the JVM plus standard class libraries and runtime files needed to execute Java apps.<br><strong>JDK</strong>: Java Development Kit. Includes the JRE, the Java compiler (<code>javac</code>), debugger, and development tools. Use the JDK to build Java programs; use the JRE to run them.<br><br>Key point: Java is not native machine code. It is compiled to bytecode, and the JVM makes the code portable across operating systems by providing a consistent runtime environment.` },
 
 { cat:"Core Java", tag:"tag-core", q:"What is a ClassLoader? ClassNotFoundException vs NoClassDefFoundError.",
-  ans:`<strong>ClassLoader</strong> loads .class files into JVM at runtime. Hierarchy: Bootstrap → Extension → Application (parent-delegation model).<br><br><strong>ClassNotFoundException</strong>: Checked exception; class not found on classpath at runtime (e.g., Class.forName() fails).<br><strong>NoClassDefFoundError</strong>: Error; class was present at compile-time but missing at runtime — common in incomplete JARs or deployment issues.` },
+  ans:`A <strong>ClassLoader</strong> is responsible for loading Java classes into the JVM at runtime. Java uses a delegation model: Bootstrap loads core JDK classes, Extension loads optional libraries, and Application loads application classes from the classpath. Custom classloaders can load classes from JARs, network locations, or other sources.<br><br><strong>ClassNotFoundException</strong>: Checked exception thrown when code explicitly tries to load a class by name (for example, <code>Class.forName("com.app.Foo")</code>) and the class is not found on the runtime classpath.<br><strong>NoClassDefFoundError</strong>: Error thrown when a class was available at compile time and compiled successfully, but is unavailable at runtime when the JVM tries to initialize or link it. Common causes include missing JARs, different runtime classpaths, or classloader conflicts.` },
 
 { cat:"Core Java", tag:"tag-core", q:"String Pool and intern(). When does == work for Strings?",
-  ans:`String literals go into the <strong>String Pool</strong> (heap). Same literal → same pooled object.<br><code>String a = "hello";</code> → pool.<br><code>String b = new String("hello");</code> → new heap object, NOT in pool.<br><code>a == b</code> → false (different refs). <code>a.equals(b)</code> → true.<br><code>b.intern()</code> returns pool reference → <code>a == b.intern()</code> is true. Always use <code>.equals()</code> for String comparison.` },
+  ans:`String literals and compile-time constant expressions are stored in the <strong>String Pool</strong> inside the heap. If two literals are identical, they refer to the same pooled object. Example: <code>String a = "hello";</code> and <code>String b = "hello";</code> both point to the same interned instance.<br><br><code>String b = new String("hello");</code> creates a distinct object on the heap. So <code>a == b</code> is false because it compares references, while <code>a.equals(b)</code> is true because it compares content.<br><br><code>intern()</code> returns the pool instance for the string; if the string is not already pooled, it is added. After <code>b.intern()</code>, <code>a == b.intern()</code> becomes true.<br><br>Use <code>==</code> only for reference equality or when you explicitly want pooled strings. For content equality, always use <code>equals()</code>.` },
 
 { cat:"Core Java", tag:"tag-core", q:"HashMap internals, threshold, and collision resolution.",
   ans:`Array of Node&lt;&gt; buckets. Key's <code>hashCode()</code> determines bucket index via <code>hash & (capacity-1)</code>.<br><strong>Collision</strong>: Linked list at that bucket. Java 8+: Converts to Red-Black Tree when bucket size ≥ 8 (TREEIFY_THRESHOLD).<br><strong>Default capacity</strong>: 16. <strong>Load factor</strong>: 0.75. Resize when size &gt; 16 × 0.75 = 12 entries (rehash doubles capacity).<br><strong>Null key</strong>: One allowed (index 0). ConcurrentHashMap does NOT allow null keys.`,
@@ -281,6 +281,7 @@ List<String> tags = posts.stream()
     .collect(Collectors.toList());` },
 
 { cat:"Streams & FP", tag:"tag-streams", q:"Find 2nd highest salary using Stream API.",
+  ans:`Get the distinct salaries, sort them highest-first, skip the top salary, and then pick the first remaining value. This avoids returning the same salary twice when there are duplicates.`,
   code:`// Using distinct + sorted
 Optional<Integer> secondHighest = employees.stream()
     .map(Employee::getSalary)
@@ -295,6 +296,7 @@ secondHighest.ifPresentOrElse(
 );` },
 
 { cat:"Streams & FP", tag:"tag-streams", q:"Find duplicates in a list / filter by length / group by department.",
+  ans:`Use stream operations to express common data transformations concisely. Detect duplicates by tracking seen elements, filter collections with <code>filter()</code>, and aggregate elements by keys using <code>Collectors.groupingBy()</code>. For numeric aggregation, use downstream collectors like <code>averagingInt()</code>.`,
   code:`List<String> list = List.of("a", "b", "a", "c", "b", "b");
 
 // 1. Find duplicates
@@ -365,6 +367,7 @@ public class CacheService {
   ans:`Spring wraps the bean in a <strong>proxy</strong>. Proxy intercepts the call → begins transaction → runs method → commit/rollback. The actual bean object has no transaction logic.<br><br><strong>Propagation types</strong>:<br>• <strong>REQUIRED</strong> (default): Join existing or create new.<br>• <strong>REQUIRES_NEW</strong>: Suspend existing, always new transaction.<br>• <strong>NESTED</strong>: Savepoint within current transaction.<br>• <strong>SUPPORTS</strong>: Use existing if present; non-transactional otherwise.<br><br><strong>Self-invocation trap</strong>: Calling a @Transactional method from within the same class bypasses the proxy → transaction won't start. Fix: inject self or use AspectJ weaving.` },
 
 { cat:"Spring Boot", tag:"tag-spring", q:"Global exception handling — @ControllerAdvice vs @ExceptionHandler.",
+  ans:`<code>@ControllerAdvice</code> or <code>@RestControllerAdvice</code> registers a global exception handler across controllers. <code>@ExceptionHandler</code> methods inside it handle specific exception types and allow you to return structured error responses in one centralized location. This helps avoid repetitive try/catch logic in controllers and keeps API error handling consistent.`,
   code:`@RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -570,6 +573,7 @@ public void generateReport() {
   ans:`<strong>Index</strong>: B-tree for fast lookup. Speeds reads, slows writes (index maintained on every write).<br><strong>Selectivity</strong>: Cardinality / total rows. High selectivity (email, user_id) → very effective. Low selectivity (is_active boolean) → optimizer may prefer full scan.<br><strong>Composite index (col1, col2)</strong>: Useful for queries filtering/sorting on both. <em>Leftmost prefix rule</em>: Query on col1 alone → uses index. Query on col2 alone → does NOT use index.` },
 
 { cat:"Database & SQL", tag:"tag-sql", q:"Useful SQL queries — employees hired last 30 days, percentage per department.",
+  ans:`These queries show common reporting patterns: date filtering for recent hires, grouped aggregation for department metrics, and window functions for percent calculations. Use the database to answer business questions efficiently rather than fetching raw rows and processing in application code.`,
   code:`-- Employees hired in the last 30 days
 SELECT employee_id, name, hire_date, department
 FROM employees
@@ -610,6 +614,7 @@ spring.datasource.hikari.leak-detection-threshold=60000 # log connections open >
 // DESIGN PATTERNS
 // ══════════════════════════════════════════════════════
 { cat:"Design Patterns", tag:"tag-design", q:"Singleton — thread-safe implementations.",
+  ans:`Singleton ensures only one instance exists and provides global access. In Java, correct lazy initialization requires careful use of synchronization or classloading guarantees. The initialization-on-demand holder idiom is usually preferred because it is thread-safe without synchronization overhead. Enum singletons are the simplest and also protect against serialization/deserialization and reflection attacks.`,
   code:`// Option 1: Double-checked locking (Java 5+)
 public class AppConfig {
     private static volatile AppConfig instance;
@@ -710,7 +715,579 @@ interface UIFactory {
 }
 class MaterialUIFactory implements UIFactory { ... }
 class FluentUIFactory  implements UIFactory { ... }` },
-];
+
+// Additional Core Java Qs added (1-22)
+{ cat:"Core Java", tag:"tag-core", q:"1. What are the main features of Java, and how do they make it different from other programming languages?",
+  ans:`Java is object-oriented, platform-independent (bytecode + JVM), strongly typed, has automatic memory management (GC), rich standard library (collections, concurrency, I/O), built-in multithreading primitives, and a mature ecosystem (JVM tooling, frameworks). Compared to languages like C/C++ it manages memory for you and avoids manual pointers; compared to dynamically typed languages it offers compile-time type safety and predictable performance characteristics.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"2. How do you compile and run a Java program from the command line, and what happens during compilation and execution?",
+  ans:`Compile with <code>javac MyApp.java</code> which produces bytecode (.class). Run with <code>java MyApp</code> which starts the JVM, loads the class, verifies bytecode, links classes, initializes static state and executes the <code>main</code> method. During execution the JIT may compile hot bytecode to native machine code for performance and the GC manages memory.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"3. Why is Java considered platform-independent, and what role do the JVM and bytecode play?",
+  ans:`Java compiles to platform-neutral bytecode which the JVM interprets or JIT-compiles on each OS/architecture. The JVM provides a stable runtime environment and standard libraries, so the same .class files run on any system with a compatible JVM — "write once, run anywhere."` },
+
+{ cat:"Core Java", tag:"tag-core", q:"4. What is the role of public, static, and void in public static void main(String[] args)?",
+  ans:`<strong>public</strong>: accessible by the JVM from outside the package. <strong>static</strong>: JVM can call it without an instance. <strong>void</strong>: method returns nothing. The signature <code>public static void main(String[] args)</code> is the program entry point the JVM looks for.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"5. What is the difference between == and equals() in Java?",
+  ans:`<code>==</code> compares reference identity for objects (and value for primitives). <code>equals()</code> is a method for logical/content equality and can be overridden (e.g., String, wrapper types, custom classes). Always use <code>equals()</code> when comparing object contents unless you specifically need reference equality.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"6. How does exception handling work in Java, and difference between checked, unchecked exceptions, and errors?",
+  ans:`Exceptions are thrown and optionally caught with <code>try/catch/finally</code>. <strong>Checked</strong> exceptions (subclass of Exception, not RuntimeException) must be declared or caught (e.g., IOException). <strong>Unchecked</strong> exceptions (RuntimeException) are programming errors (NPE, IAE) and need not be declared. <strong>Errors</strong> (subclass of Error) are serious JVM issues (OutOfMemoryError) and usually not recoverable.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"7. What happens if we declare a StringBuffer as final, can its value change?",
+  ans:`Declaring reference final prevents reassignment of the variable, but does not make the object immutable. A final <code>StringBuffer</code> reference cannot point to another object, but you can still call mutating methods like <code>append()</code> to change its contents.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"8. Which Java versions have you worked on, and what key features did you use?",
+  ans:`Common interview answer: list versions you used (e.g., Java 8, 11, 17, 21) and mention features: Java 8 streams/lambdas, Optional, Date/Time API; Java 11 HTTP client; Java 17 sealed classes/records; Java 21 virtual threads (if used). Focus on concrete examples from your projects.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"9. How would you reverse a string without using a temporary variable or inbuilt methods?",
+  ans:`Use a two-pointer swap on a char array in place: convert to char[], swap chars at left/right indices while left<right. This uses O(1) extra space and O(n) time.` ,
+  code:`char[] s = str.toCharArray(); for (int i=0, j=s.length-1; i<j; i++, j--) { char t=s[i]; s[i]=s[j]; s[j]=t; } return new String(s);` },
+
+{ cat:"Core Java", tag:"tag-core", q:"10. Difference between array and ArrayList (memory, performance, use cases).",
+  ans:`Array: fixed-size, contiguous memory, primitives supported, lower overhead and fast indexed access. ArrayList: dynamic-size wrapper over array, stores objects (autoboxing for primitives), supports resizing/insert/remove with amortized cost. Use arrays for fixed-size or primitive-heavy workloads; use ArrayList for dynamic collections and convenience.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"11. Have you used StringBuffer, and when is it appropriate?",
+  ans:`StringBuffer is synchronized and safe for multi-threaded mutation but has higher cost. Prefer StringBuilder for single-threaded use. Use StringBuffer only when multiple threads share and mutate the same buffer without external synchronization.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"12. Why avoid String concatenation (+) inside loops vs StringBuilder.append()?",
+  ans:`String + in loops can create many temporary String objects (immutable), causing GC pressure. <code>StringBuilder.append()</code> mutates a single buffer with lower allocation overhead and better performance in repeated concatenation scenarios.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"13. Given a sentence, how do you extract all words into an array?",
+  ans:`Split using a regex that matches whitespace or punctuation: <code>String[] words = sentence.trim().split("\\W+");</code> (adjust for apostrophes). Optionally filter out empty strings and normalize case.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"14. How to handle multiple exceptions like IOException, FileNotFoundException, and generic Exception?",
+  ans:`Use multi-catch or ordered catches. For multi-catch: <code>catch (IOException | SomeOtherException ex)</code>. When subclass relationship exists (FileNotFoundException extends IOException) catch the more specific first, then broader exceptions. Avoid catching generic Exception unless necessary.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"15. If user inputs any type (string, char, object), which data structure to use: array or ArrayList?",
+  ans:`Use an <code>ArrayList<Object></code> (or List<Object>) for variable-sized heterogeneous input. It supports dynamic resizing and common collection operations; arrays are less flexible and require casting/size management.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"16. Given an array with strings and special characters, how filter only string values?",
+  ans:`If array is Object[], filter by type: <code>Arrays.stream(arr).filter(o -> o instanceof String).map(o -> (String)o).toArray(String[]::new)</code>. For char tokens or punctuation represented as characters, adjust predicate accordingly.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"17. What is a ClassLoader and how does class-loading work (Bootstrap, Extension, Application)?",
+  ans:`ClassLoader loads .class bytes into the JVM. Bootstrap loads core JDK classes, Extension (platform) loads optional JARs, Application (system) loads app classes from classpath. JVM uses parent-delegation: request goes to parent first to avoid duplicate definitions; custom loaders can break delegation for advanced use cases (plugins, hot-reload).` },
+
+{ cat:"Core Java", tag:"tag-core", q:"18. How is memory managed: stack, heap, metaspace, program counter?",
+  ans:`Stack: per-thread frames (local variables, return addresses) freed on method exit. Heap: shared, stores objects, GC-managed. Metaspace: native memory for class metadata. Program Counter: per-thread pointer to current JVM bytecode instruction. Proper separation helps concurrency and GC behavior.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"19. What is garbage collection, heap generations, GC algorithms, and why are Xms/Xmx important?",
+  ans:`GC reclaims unused objects. Heap is split: Young (Eden + Survivors) for short-lived objects and Old for long-lived objects. Algorithms: Serial, Parallel, CMS, G1, ZGC, Shenandoah. <code>-Xms</code> sets initial heap size and <code>-Xmx</code> sets max heap; tuning them affects GC frequency and pause behavior.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"20. How does JVM decide when to perform garbage collection?",
+  ans:`GC triggers based on heap pressure: Eden fills (minor GC), promotion thresholds, allocation failures, or explicit System.gc() (discouraged). The GC algorithm and heuristics (survivor percentages, tenuring thresholds) influence when collections happen.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"21. What is immutability, and why is it important?",
+  ans:`Immutability means object state cannot change after construction. Benefits: thread-safety without locks, simpler reasoning, safe reuse as map keys, and reduced defensive copying. Use for value objects (Money, UUID wrappers).` },
+
+{ cat:"Core Java", tag:"tag-core", q:"22. How to create a truly immutable class in Java and rules to follow?",
+  ans:`Make class final, fields private final, initialize via constructor, avoid setters, defensively copy mutable inputs/outputs, and ensure no methods expose internal mutable state. Example: use <code>List.copyOf()</code> and return unmodifiable views.` },
+// Advanced Core Java Qs (23-47)
+{ cat:"Core Java", tag:"tag-core", q:"23. What is serialization in Java and best practices/pitfalls?",
+  ans:`Serialization converts an object graph to a byte stream (implements Serializable). Best practices: declare <code>serialVersionUID</code>, avoid serializing sensitive data (mark transient), prefer custom readObject/writeObject for control, and use stable DTOs for long-term persistence. Pitfalls: security risks from deserialization, compatibility breaks, and large payloads.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"24. If superclass method throws a runtime exception and subclass adds throws clause, will it compile?",
+  ans:`Overriding methods cannot introduce new checked exceptions not declared by the superclass. Unchecked (runtime) exceptions can be thrown freely. Adding a new checked exception to the subclass's throws clause will cause a compile error.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"25. Why might a program throw ClassNotFoundException at runtime even if compiled?",
+  ans:`Because the class is missing from the runtime classpath or classloader cannot locate it (missing JAR, module boundary, or custom classloader isolation).` },
+
+{ cat:"Core Java", tag:"tag-core", q:"26. What is a marker interface? Examples and usage.",
+  ans:`A marker interface carries metadata via type only (no methods). Examples: <code>Serializable</code>, <code>Cloneable</code>, <code>Remote</code>. Annotations are preferred today for richer metadata.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"27. Why avoid StringBuffer in modern Java apps?",
+  ans:`StringBuffer is synchronized which incurs overhead; prefer <code>StringBuilder</code> for single-threaded use and mutable concatenation. Use StringBuffer only when multiple threads share the same buffer without external synchronization.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"28. Will using String objects for millions of records create memory or performance issues?",
+  ans:`Yes. Large numbers of String instances increase heap usage and GC work. Use streaming, interning cautiously, char[] reuse, or compact representations and consider off-heap or chunked processing for very large datasets.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"29. Java 8 features: list main ones and an example.",
+  ans:`Lambdas, Streams API, Optional, default/static methods in interfaces, and java.time (Date/Time API). They enable concise functional-style code and safer null handling.`,
+  code:`List<String> names = List.of("Alice","Bob","Anna");
+List<String> aNames = names.stream()
+    .filter(s -> s.startsWith("A"))
+    .map(String::toUpperCase)
+    .collect(Collectors.toList());` },
+
+{ cat:"Core Java", tag:"tag-core", q:"30. Why are equals() and hashCode() critical in real systems?",
+  ans:`Collections like HashMap use hashCode for bucket placement and equals for equality checks. Inconsistent implementations break collection invariants leading to missing or duplicate entries and subtle bugs.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"31. Can a top-level class be declared private and still have a main() executed?",
+  ans:`No — top-level classes cannot be private in Java; attempting to declare one private results in a compile-time error.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"32. How do you create a custom annotation?",
+  ans:`Use <code>@interface</code> and specify retention and target. Example: <code>@Retention(RetentionPolicy.RUNTIME) @Target(ElementType.METHOD) public @interface Timed {}</code>. Process with reflection or annotation processors.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"33. Is it possible to declare a constructor final? Why or why not?",
+  ans:`No. Constructors are not inherited and cannot be overridden, so the <code>final</code> modifier doesn't apply and is disallowed by the language.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"34. What is a final class and when to use it?",
+  ans:`A final class cannot be subclassed. Use it for immutable types, API stability, or security-sensitive classes where extension might break invariants.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"35. What is covariant method overriding?",
+  ans:`An overriding method that narrows the return type to a subtype of the original method's return. Java supports covariant return types, improving type safety.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"36. Are you familiar with Java 21 features, and which ones have you used?",
+  ans:`Java 21 brings Project Loom features (virtual threads), pattern matching improvements and collection enhancements. Mention any used features like virtual threads for high-concurrency tasks or record patterns.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"37. Explain the internal working of HashMap.",
+  ans:`HashMap uses an internal array of bins (Node<K,V>). Keys are hashed and mapped to an index. Collisions are stored in linked lists or trees (after threshold). When load factor threshold exceeded, the table resizes and entries are rehashed.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"38. How does HashMap handle collisions? (LinkedList vs Tree structure in Java 8+)",
+  ans:`Initially collisions are handled by chaining with linked lists. If a bucket becomes large (exceeds TREEIFY_THRESHOLD) and table is sufficiently big, the list is converted to a balanced Red-Black tree for O(log n) lookups.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"39. Why is the default load factor of HashMap set to 0.75?",
+  ans:`0.75 offers a practical balance between space efficiency and time: it keeps memory usage reasonable while keeping collision probability low to maintain good average lookup performance.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"40. What is the Java Memory Model?",
+  ans:`The JMM specifies rules for visibility, ordering, and atomicity across threads (happens-before). It defines how operations on memory by one thread become visible to others and how volatile and synchronized affect ordering.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"41. Explain thread safety and concurrency concepts in Java.",
+  ans:`Thread-safety ensures correct behavior under concurrent access. Techniques: immutability, synchronization, explicit locks, volatile for visibility, atomic classes and concurrent collections. Favor high-level concurrency utilities over low-level primitives.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"42. How do JVM arguments impact performance, and common tuning parameters?",
+  ans:`JVM args set heap sizes, choose GC algorithm, and control runtime behavior. Common flags: <code>-Xms</code>, <code>-Xmx</code>, <code>-XX:+UseG1GC</code>, <code>-XX:MaxGCPauseMillis</code>, <code>-Xss</code> (stack size), and GC logging flags for diagnostics.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"43. How do you identify a memory leak in a running Java application?",
+  ans:`Capture heap dumps and analyze with tools like Eclipse MAT or VisualVM; look for growing retained sizes, GC roots keeping objects alive, suspicious static collections, and unclosed resources. Add allocation telemetry and enable leak detection thresholds.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"44. When would you choose CompletableFuture over ExecutorService?",
+  ans:`Choose CompletableFuture when you need non-blocking, composable async pipelines and flexible error handling. Use ExecutorService when you need explicit control over thread lifecycle and scheduling.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"45. When should you avoid using synchronized and prefer Lock?",
+  ans:`Prefer Lock when you need tryLock with timeout, interruptible lock acquisition, multiple condition variables, or explicit fairness policies—features not available with synchronized.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"46. Why are Strings immutable in Java? Explain security and performance reasons.",
+  ans:`Immutability enables safe sharing across threads, supports interning and cached hashCode, and prevents accidental or malicious changes to values like class names or file paths after validation—important for security and consistent behavior.` },
+
+{ cat:"Core Java", tag:"tag-core", q:"47. What does a Java Stream actually do internally, and how does it differ from loops?",
+  ans:`Streams build a pipeline of lazy intermediate operations backed by a Spliterator and functional operators; terminal operations drive traversal and may fuse stages. Unlike loops (external iteration), streams offer internal iteration, declarative style, and easy parallelization via fork/join under the hood.` },
+// OOP Questions (48-62)
+{ cat:"OOP", tag:"tag-design", q:"48. What are the four OOP principles, and examples?",
+  ans:`Encapsulation: hide internal state via private fields and expose behavior via methods (e.g., Account.getBalance()). Inheritance: derive specialized classes from a base class (e.g., Employee -> Manager). Polymorphism: use a base type reference to hold subtype instances and call overridden methods. Abstraction: expose high-level interfaces while hiding implementation details.` },
+
+{ cat:"OOP", tag:"tag-design", q:"49. What are abstract classes and when to use them?",
+  ans:`Abstract classes allow shared implementation and abstract methods for subclasses to implement. Use when subclasses share code and a common base state, but you still want to enforce certain method implementations.` },
+
+{ cat:"OOP", tag:"tag-design", q:"50. Difference between abstract class and interface; when to choose which?",
+  ans:`Interfaces define contracts (multiple inheritance allowed) with default/static methods; abstract classes can hold state and constructors. Prefer interfaces for capabilities and multiple inheritance; use abstract class for shared code/state among related classes.` },
+
+{ cat:"OOP", tag:"tag-design", q:"51. How to compare custom objects: Comparable vs Comparator?",
+  ans:`Implement Comparable<T> in the class to define natural ordering via compareTo(). Use Comparator<T> to provide external ordering strategies (lambda-friendly) or multiple orderings without changing the class.` },
+
+{ cat:"OOP", tag:"tag-design", q:"52. Can an interface implement a class? Why not?",
+  ans:`No. Interfaces declare behavior; they cannot implement classes. Java forbids interfaces from extending concrete class implementations because interfaces express a contract, not concrete inheritance.` },
+
+{ cat:"OOP", tag:"tag-design", q:"53. What is the diamond problem and how does Java solve it?",
+  ans:`Diamond problem arises with multiple inheritance of implementation leading to ambiguity. Java avoids it by disallowing multiple class inheritance; interfaces may have default methods but conflicts are resolved by explicit override or choosing super implementations.` },
+
+{ cat:"OOP", tag:"tag-design", q:"54. Why must equal objects have same hash code?",
+  ans:`Collections like HashMap rely on hashCode to bucket objects. If equal objects have different hash codes they may end up in different buckets causing lookups to fail. The contract preserves collection correctness.` },
+
+{ cat:"OOP", tag:"tag-design", q:"55. Why override hashCode() when overriding equals()?",
+  ans:`To maintain the equals/hashCode contract: equal objects must produce same hashCode. Failing to override both leads to incorrect behavior in hashed collections (lost or duplicated entries).` },
+
+{ cat:"OOP", tag:"tag-design", q:"56. Student(id,name) — can two students with same name be equal? How design equals/hashCode?",
+  ans:`Define equality based on business identity: if ID uniquely identifies a student, use id in equals/hashCode. If business rule says name determines equality, use name. Implement both methods consistently and include only immutable or stable fields.` },
+
+{ cat:"OOP", tag:"tag-design", q:"57. What are default methods in interfaces and why introduced?",
+  ans:`Default methods allow adding new behavior to interfaces without breaking existing implementors. Introduced in Java 8 to evolve APIs (e.g., Stream additions) while preserving backward compatibility.` },
+
+{ cat:"OOP", tag:"tag-design", q:"58. Mumbai branch needs special behavior; how design using interfaces or default methods?",
+  ans:`Provide a common interface with default behavior and override the Mumbai branch implementation with a class that implements the interface and overrides the default method to supply special behavior. This avoids impacting other branches.` },
+
+{ cat:"OOP", tag:"tag-design", q:"59. Add new functionality for all branches without breaking existing code?",
+  ans:`Add a default method in the interface (Java 8+) providing a backward-compatible default implementation, or extend the interface and update implementations incrementally.` },
+
+{ cat:"OOP", tag:"tag-design", q:"60. Is method overriding resolved at compile time or runtime? Explain dynamic dispatch.",
+  ans:`Method overriding is resolved at runtime (dynamic dispatch). The JVM selects the concrete implementation based on the actual object's class (not reference type) using virtual method tables (vtable) or equivalent lookup.` },
+
+{ cat:"OOP", tag:"tag-design", q:"61. What are equals() and hashCode(), how used internally by collections?",
+  ans:`equals() compares logical equality; hashCode gives an int used to choose hash bucket. Hash-based collections compute hashCode for bucket selection and use equals to find matching keys within the bucket.` },
+
+{ cat:"OOP", tag:"tag-design", q:"62. Why were default methods introduced in Java 8 and what problem do they solve?",
+  ans:`Default methods enable interface evolution by providing a default implementation so adding a method won't break existing implementors. They solve the API evolution problem (e.g., adding Stream methods to Collection).` },
+
+// Concurrency & Async (63-80)
+{ cat:"Concurrency", tag:"tag-conc", q:"63. What is the difference between HashMap and ConcurrentHashMap?",
+  ans:`HashMap is not thread-safe for concurrent access and can lead to data corruption if modified by multiple threads. ConcurrentHashMap provides thread-safe concurrent access using finer-grained locking/CAS; reads are mostly lock-free and writes lock only segments/buckets or use CAS, enabling high concurrency without global locking.` },
+
+{ cat:"Concurrency", tag:"tag-conc", q:"64. Which data structure is used internally by HashMap?",
+  ans:`HashMap uses an array of bins (Node<K,V>). Each bin is a linked list (or a tree when large). The index is computed by mixing the key's hash and applying (n-1) & hash.` },
+
+{ cat:"Concurrency", tag:"tag-conc", q:"65. What is a ThreadPool and why prefer it over manually creating threads?",
+  ans:`ThreadPool (ExecutorService) manages a pool of reusable threads, limiting thread creation overhead and resource usage. It provides queuing, lifecycle management, and rejection policies — use it to control concurrency, throughput and avoid creating too many threads which can exhaust resources.` },
+
+{ cat:"Concurrency", tag:"tag-conc", q:"66. Difference between extending Thread and implementing Runnable?",
+  ans:`Extending Thread couples your task to a thread class and prevents subclassing other classes. Implementing Runnable separates task from execution, allows reuse with different executors and is preferred for cleaner design.` },
+
+{ cat:"Concurrency", tag:"tag-conc", q:"67. How does Java manage threads and memory; which data is shared vs thread-local?",
+  ans:`Each thread has its own stack (local variables, frames) and program counter. Heap is shared among threads (objects). Thread-local data can be stored in ThreadLocal for per-thread state. Synchronization ensures visibility and ordering between threads.` },
+
+{ cat:"Concurrency", tag:"tag-conc", q:"68. What is a Lock in Java and how is it different from synchronized?",
+  ans:`Lock (e.g., ReentrantLock) offers explicit lock/unlock API, tryLock, timed waits, and multiple Condition objects. <code>synchronized</code> is simpler and JVM-managed (enter/exit) but lacks these advanced features.` },
+
+{ cat:"Concurrency", tag:"tag-conc", q:"69. What is the volatile keyword and what guarantees does it provide?",
+  ans:`volatile ensures visibility: writes to a volatile variable are immediately visible to other threads and establish a happens-before relationship. It does NOT provide atomicity for compound actions (like ++).` },
+
+{ cat:"Concurrency", tag:"tag-conc", q:"70. Can volatile alone ensure thread safety? Why or why not?",
+  ans:`No. Volatile guarantees visibility and ordering for single variable reads/writes but does not provide atomicity for read-modify-write operations. Use atomic classes or synchronization for compound updates.` },
+
+{ cat:"Concurrency", tag:"tag-conc", q:"71. What is ConcurrentHashMap and how does it achieve thread safety internally?",
+  ans:`ConcurrentHashMap uses CAS for reads and fine-grained locking/CAS for updates; in Java 8 it uses a combination of volatile/atomic operations and synchronized blocks on bins plus treeification for large buckets, enabling concurrent reads and updates with minimal contention.` },
+
+{ cat:"Concurrency", tag:"tag-conc", q:"72. How does internal working of HashMap and ConcurrentHashMap differ?",
+  ans:`HashMap uses simple buckets with potential global rehashing and is not thread-safe. ConcurrentHashMap uses concurrency-friendly algorithms: lock-free reads, per-bucket synchronization or CAS-based updates, and avoids resizing stalls by using forwarders during rehash.` },
+
+{ cat:"Concurrency", tag:"tag-conc", q:"73. How would you create a deadlock using two threads?",
+  ans:`Classic example: Thread A locks lock1 then tries to lock lock2; Thread B locks lock2 then tries to lock lock1 — circular wait causes deadlock.` ,
+  code:`Object a = new Object(), b = new Object();
+Thread t1 = new Thread(() -> { synchronized(a) { sleep(50); synchronized(b) { } } });
+Thread t2 = new Thread(() -> { synchronized(b) { sleep(50); synchronized(a) { } } });
+t1.start(); t2.start();` },
+
+{ cat:"Concurrency", tag:"tag-conc", q:"74. How can you enable and use asynchronous methods in Spring Boot?",
+  ans:`Enable with <code>@EnableAsync</code> and annotate methods with <code>@Async</code>. Provide a TaskExecutor bean (ThreadPoolTaskExecutor) to control thread pool size, queue, and rejected execution policy. Remember: @Async methods must be called from another bean (proxy applies).` },
+
+{ cat:"Concurrency", tag:"tag-conc", q:"75. What are CompletableFutures and how do they help?",
+  ans:`CompletableFuture represents an async computation with rich composition APIs (thenApply, thenCompose, exceptionally). They enable non-blocking pipelines, combining multiple async results, timeouts, and fallback strategies without blocking threads.` ,
+  code:`CompletableFuture.supplyAsync(() -> fetch())
+    .thenApply(this::transform)
+    .exceptionally(ex -> fallback());` },
+
+{ cat:"Concurrency", tag:"tag-conc", q:"76. When multiple threads share resources, how does wait() differ from run()?",
+  ans:`<code>wait()</code> (Object.wait) causes the current thread to release the monitor and wait to be notified; it's used for coordination. <code>run()</code> simply executes the thread's task and does not release locks or coordinate—it's the thread's entry method.` },
+
+{ cat:"Concurrency", tag:"tag-conc", q:"77. How do you safely unlock a lock to avoid deadlocks or thread starvation?",
+  ans:`Always use try/finally: <code>lock.lock(); try { ... } finally { lock.unlock(); }</code>. Prefer timeouts (tryLock with timeout) and avoid holding locks during blocking I/O; keep critical sections small.` ,
+  code:`if (lock.tryLock(1, TimeUnit.SECONDS)) {
+  try { /* work */ } finally { lock.unlock(); }
+} else { /* handle failure */ }` },
+
+{ cat:"Concurrency", tag:"tag-conc", q:"78. If two maps are accessed concurrently, should we use separate synchronized blocks? Why?",
+  ans:`Yes — synchronize on different locks (or use concurrent collections) to avoid unnecessary contention and enable parallelism. Coarse-grained locking reduces concurrency and increases contention; fine-grained locking improves throughput but is more complex.` },
+
+{ cat:"Concurrency", tag:"tag-conc", q:"79. How would you monitor and manage async tasks in Spring Boot (progress & failures)?",
+  ans:`Use a custom TaskExecutor that records task metadata, expose metrics via Micrometer, track progress via CompletableFuture state or a database/Redis job store, and centralize failure handling with callbacks (.handle/.whenComplete) and Alerting for repeated failures.` },
+
+{ cat:"Concurrency", tag:"tag-conc", q:"80. How have you implemented multithreading in projects and what benefits were observed?",
+  ans:`Example answer: used ThreadPoolExecutor and CompletableFutures to parallelize external API calls and batch processing; reduced latency from 4s to 800ms by parallelizing IO-bound tasks and improved throughput. Emphasize profiling, proper pool sizing, and measuring before/after.` },
+// Design Patterns (81-91)
+{ cat:"Design Patterns", tag:"tag-design", q:"81. What are commonly used design patterns in Java and where are they applied?",
+  ans:`Common patterns: Singleton (single instance managers), Factory/AbstractFactory (object creation), Builder (complex immutable objects), Strategy (replaceable algorithms), Decorator (add responsibilities), Observer (event systems), Adapter (integration), Proxy (access control). Use patterns where they improve clarity, reuse, or decouple components.` },
+
+{ cat:"Design Patterns", tag:"tag-design", q:"82. What is the Singleton pattern; implementations and preferred one?",
+  ans:`Singleton ensures a single instance. Implementations: enum singleton (recommended), holder idiom (lazy and thread-safe), double-checked locking. Enum is preferred for simplicity, serialization-safety, and reflection resistance.` ,
+  code:`// Enum singleton
+public enum Config { INSTANCE; public String get(String k) { ... } }` },
+
+{ cat:"Design Patterns", tag:"tag-design", q:"83. Why is the constructor private in a Singleton and how is the instance created?",
+  ans:`Private constructor prevents external instantiation; instance is created internally (static field or holder class or enum constant) and exposed via a static accessor.` },
+
+{ cat:"Design Patterns", tag:"tag-design", q:"84. What is the Decorator pattern and when to use it?",
+  ans:`Decorator adds behavior to objects at runtime by wrapping them with decorator classes implementing the same interface. Use for flexible, composable behavior additions (e.g., I/O streams: BufferedInputStream adds buffering).` },
+
+{ cat:"Design Patterns", tag:"tag-design", q:"85. Which microservices design patterns have you worked with?",
+  ans:`Common ones: Circuit Breaker, Retry, Bulkhead, API Gateway, Saga (choreography/orchestration), CQRS, Event Sourcing. Mention ones used with concrete examples (e.g., Resilience4j circuit breaker).` },
+
+{ cat:"Design Patterns", tag:"tag-design", q:"86. In Factory pattern, how decide which subclass should create the object?",
+  ans:`Use input parameters or configuration (type, strategy) to determine subclass. Encapsulate creation logic in the factory; prefer dependency injection or registration for extensibility.` },
+
+{ cat:"Design Patterns", tag:"tag-design", q:"87. How can Singleton be broken (reflection/serialization) and how to fix?",
+  ans:`Reflection can call private constructor; serialization can create new instances. Fixes: use enum singleton (immune to deserialization/reflective creation) or defend with readResolve and checks in constructor to prevent multiple instances.` },
+
+{ cat:"Design Patterns", tag:"tag-design", q:"88. What are SOLID principles and examples in banking domain?",
+  ans:`S: Single Responsibility (AccountService handles account ops only). O: Open/Closed (extend fee calculation without modifying existing code). L: Liskov (subtypes must be substitutable, e.g., SavingsAccount behaves like Account). I: Interface Segregation (separate PaymentProcessor and Reporting interfaces). D: Dependency Inversion (depend on abstractions for DB/repo).` },
+
+{ cat:"Design Patterns", tag:"tag-design", q:"89. What is the Circuit Breaker pattern and why important in microservices?",
+  ans:`Circuit Breaker prevents cascading failures by opening when downstream errors exceed threshold, returning fast failures or fallback. It protects system resilience and allows failing services to recover without bringing callers down.` },
+
+{ cat:"Design Patterns", tag:"tag-design", q:"90. What is Half-Open state in Circuit Breaker?",
+  ans:`Half-Open is a probe state after open timeout where a limited number of calls are allowed to test if the downstream service has recovered; success closes the circuit, failure re-opens it.` },
+
+{ cat:"Design Patterns", tag:"tag-design", q:"91. What is the Saga pattern and difference between Choreography and Orchestration?",
+  ans:`Saga manages distributed transactions via sequences of local transactions with compensations on failure. Choreography: services emit/listen to events (decentralized). Orchestration: a central coordinator calls services (easier to track/debug).` },
+
+// Spring Core & Boot (92-119)
+{ cat:"Spring Boot", tag:"tag-spring", q:"92. How does Spring Boot simplify deployment compared to traditional Spring applications?",
+  ans:`Spring Boot provides opinionated starters, auto-configuration, and an embedded servlet container (Tomcat/Jetty) so apps can be packaged as executable JARs and run with java -jar. This reduces boilerplate configuration and eases deployment.` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"93. What is Inversion of Control (IoC) and how does Dependency Injection work in Spring?",
+  ans:`IoC inverts control of object creation to a container. Spring's DI injects dependencies via constructor, setter, or field injection, wiring beans by type, name or qualifiers configured in the ApplicationContext.` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"94. How are beans created and managed in the Spring container?",
+  ans:`Beans are instantiated by the container using component scanning, @Bean factory methods, or explicit registration. The container manages lifecycle events, dependency injection, scopes, and destruction callbacks.` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"95. What is the default bean scope in Spring?",
+  ans:`Singleton: a single shared instance per ApplicationContext. Other scopes: prototype, request, session, application, and custom scopes.` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"96. Which annotations are used to create beans in Spring?",
+  ans:`@Component, @Service, @Repository, @Controller/@RestController for components; @Configuration with @Bean methods for programmatic beans. Use @ComponentScan or auto-configuration to discover them.` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"97. What is the difference between @Primary and @Qualifier?",
+  ans:`@Primary marks a bean as the default when multiple candidates exist. @Qualifier disambiguates by name or custom qualifier annotation to select a specific bean.` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"98. What is @Profile and when should it be used?",
+  ans:`@Profile marks beans or configurations active for specific environments (dev, test, prod). Use to separate environment-specific beans like datasource settings or feature toggles.` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"99. What is the lifecycle of a bean?",
+  ans:`Instantiate → Populate properties → setBeanName/setBeanFactory → postProcessBeforeInitialization → @PostConstruct / init-method → postProcessAfterInitialization → bean in use → @PreDestroy / destroy-method on context close.` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"100. How do you handle exception handling in REST controllers in Spring Boot?",
+  ans:`Use @ControllerAdvice/@RestControllerAdvice with @ExceptionHandler methods to return consistent error responses and HTTP status codes. For validation errors use @Valid and handle MethodArgumentNotValidException.` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"101. What is the internal lifecycle of a Spring bean?",
+  ans:`Container creates bean instance, performs dependency injection, applies BeanPostProcessors, calls lifecycle callbacks (InitializingBean, @PostConstruct), and when context is closed it triggers destruction callbacks (DisposableBean, @PreDestroy, destroy-method).` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"102. How do you handle circular dependencies in Spring?",
+  ans:`Prefer constructor injection; circular constructor deps cause failure. Use setter injection, @Lazy, ObjectProvider, or break cycles by refactoring. For prototype beans or complex cycles, redesign to remove the circular dependency.` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"103. How can you prevent auto-configuration when a custom bean already exists?",
+  ans:`Spring Boot auto-configurations commonly use @ConditionalOnMissingBean so your custom @Bean will override auto-configured ones. You can also disable specific auto-config classes via spring.autoconfigure.exclude.` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"104. What are correlation IDs and why are they used?",
+  ans:`Correlation IDs are unique identifiers propagated across request chains to trace and correlate logs, metrics, and distributed calls for debugging and observability.` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"105. How do you fetch the correlation ID in a Spring Boot application?",
+  ans:`Store the correlation ID in MDC (Mapped Diagnostic Context) within a servlet Filter or WebMvc interceptor; then fetch via MDC.get("correlationId") in services or logging layouts.` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"106. How do you set an existing correlation ID in Spring Boot?",
+  ans:`Read the incoming header (e.g., X-Correlation-Id) in a Filter and call MDC.put("correlationId", headerValue) so it's available to downstream code and loggers.` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"107. How do you create a new correlation ID?",
+  ans:`Generate a UUID when none is provided, set it into MDC and add the header to outgoing requests so downstream services receive the same correlation ID.` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"108. Can a Spring Boot project connect to two different databases at the same time?",
+  ans:`Yes. Configure multiple DataSource beans, mark one @Primary, and provide separate EntityManagerFactory and PlatformTransactionManager for each persistence unit (JPA) or use routing datasources for multi-tenancy.` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"109. How do you connect to multiple databases in Spring Boot?",
+  ans:`Define two DataSource beans (properties namespaces), configure two LocalContainerEntityManagerFactoryBean beans and two JpaTransactionManager beans, and use @Transactional("txManagerName") to bind transactions to the correct DB.` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"110. What is difference between @Component, @Service, and @Repository?",
+  ans:`Semantically they annotate stereotypes: @Component is generic, @Service indicates service-layer, @Repository indicates data/repo layer and enables exception translation into Spring DataAccessException. Functionally they are similar for component scanning.` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"111. Explain bean scopes and the Spring bean lifecycle.",
+  ans:`Scopes: singleton (one per context), prototype (new instance per request), request/session (web scopes), application, websocket, and custom scopes. Lifecycle covered in question 99/101: init callbacks, post-processors, and destroy callbacks.` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"112. Describe the Spring Boot application startup sequence.",
+  ans:`SpringApplication.run() creates an ApplicationContext, loads environment and properties, runs auto-configuration classes, registers beans, initializes them (post-processors, @PostConstruct), and starts embedded server (if web).` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"113. How does @Transactional work internally and common pitfalls?",
+  ans:`@Transactional is implemented via proxies (AOP). Proxy intercepts method call to start/commit/rollback transactions using PlatformTransactionManager. Pitfalls: self-invocation bypasses proxy, using private methods, incorrect propagation types, and mixing transactional boundaries across threads.` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"114. Design a rate limiter allowing 5 requests per user per minute.",
+  ans:`Use a distributed counter per user in Redis with TTL of 1 minute, increment atomically (INCR) and check value <=5; or use a token bucket algorithm stored in Redis or use a library (Bucket4j, Resilience4j).` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"115. How to handle file upload in Spring Boot and persist it?",
+  ans:`Controller accepts MultipartFile; service validates and either streams to disk/DB/S3. For DB persistence, store as BLOB (beware size) or better upload to object store (S3) and save reference in DB.` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"116. What is Spring WebFlux and how does it work?",
+  ans:`WebFlux is reactive, non-blocking web framework using Reactor (Mono/Flux). Works on non-blocking runtimes (Netty) and scales with fewer threads for I/O-bound workloads. Use reactive repositories and backpressure-aware streams.` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"117. How to configure an Amazon S3 client in Spring Boot?",
+  ans:`Use AWS SDK v2 or Spring Cloud AWS, configure credentials via environment, profile, or IAM roles, and inject S3Client bean configured with region. Keep secrets out of code, use IAM roles in production.` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"118. How to configure Redis client and ensure cache updated only after DB commit?",
+  ans:`Use Lettuce or Jedis as client, configure CacheManager. To update cache after DB commit, use TransactionSynchronizationManager.registerSynchronization to update/remove cache on afterCommit or publish an event handled after transaction commit (ApplicationEvent + @TransactionalEventListener(phase = AFTER_COMMIT)).` },
+
+{ cat:"Spring Boot", tag:"tag-spring", q:"119. How to configure and manage two different databases in single Spring Boot app (routing & transactions)?",
+  ans:`Define multiple DataSources, two EntityManagerFactory beans, and two transaction managers. For routing, implement AbstractRoutingDataSource to choose DataSource at runtime, and ensure transaction managers are used explicitly for operations targeting each DB.` },
+
+// Web & Security (120-143)
+{ cat:"REST & Security", tag:"tag-rest", q:"120. What is CORS and how do you enable it in Spring Boot?",
+  ans:`CORS is Cross-Origin Resource Sharing; it controls which domains can access resources. In Spring Boot enable it with @CrossOrigin on controllers or configure a CorsConfigurationSource bean for global settings.` },
+
+{ cat:"REST & Security", tag:"tag-rest", q:"121. How does Spring Security authenticate users?",
+  ans:`Spring Security authenticates by building an Authentication object from credentials and passing it to AuthenticationManager, which delegates to configured AuthenticationProvider(s) like DaoAuthenticationProvider or OAuth2 providers.` },
+
+{ cat:"REST & Security", tag:"tag-rest", q:"122. What is the difference between authentication and authorization?",
+  ans:`Authentication proves identity (who the user is). Authorization determines permissions (what the user can do). Both are enforced by security layers.` },
+
+{ cat:"REST & Security", tag:"tag-rest", q:"123. How do you secure a REST endpoint in Spring Boot?",
+  ans:`Use Spring Security configuration with HttpSecurity to require authentication/roles for endpoint patterns, or annotate controllers with @PreAuthorize or @RolesAllowed for method-level access control.` },
+
+{ cat:"REST & Security", tag:"tag-rest", q:"124. What is JWT and why use it?",
+  ans:`JWT (JSON Web Token) is a compact, self-contained token with signed claims. Use it for stateless authentication in APIs because it carries identity and expiry without server session state.` },
+
+{ cat:"REST & Security", tag:"tag-rest", q:"125. How do you validate a JWT in a Spring Boot app?",
+  ans:`Parse the token using a JWT library, verify the signature and expiry, extract claims, and create an Authentication object to populate SecurityContext if valid.` },
+
+{ cat:"REST & Security", tag:"tag-rest", q:"126. What is CSRF and how does Spring Security protect against it?",
+  ans:`CSRF is a cross-site request forgery attack that exploits authenticated browser sessions. Spring Security protects with a token (CsrfToken) that must be submitted in state-changing requests, preventing unauthorized cross-origin actions.` },
+
+{ cat:"REST & Security", tag:"tag-rest", q:"127. When should CSRF protection be disabled?",
+  ans:`Disable CSRF for stateless APIs that do not use browser sessions, especially when using token-based auth like JWT and only accepting JSON requests from trusted clients.` },
+
+{ cat:"REST & Security", tag:"tag-rest", q:"128. How do you implement Basic Auth in Spring Boot?",
+  ans:`Configure HttpSecurity to httpBasic() and define a UserDetailsService or in-memory users. It sends credentials in Authorization headers and should always be used over HTTPS.` },
+
+{ cat:"REST & Security", tag:"tag-rest", q:"129. How do you implement OAuth2 login in Spring Boot?",
+  ans:`Use spring-boot-starter-oauth2-client, configure client registration in application.properties, and let Spring Security handle redirects, token exchanges, and user info retrieval for providers like Google or GitHub.` },
+
+{ cat:"REST & Security", tag:"tag-rest", q:"130. What are filters and interceptors in Spring?",
+  ans:`Filters are servlet-level components that process requests before the Spring MVC pipeline. Interceptors are Spring MVC components that run before/after controller handlers and can modify requests, responses, or model data.` },
+
+{ cat:"REST & Security", tag:"tag-rest", q:"131. What is OAuth2 Resource Server?",
+  ans:`OAuth2 Resource Server validates access tokens on incoming requests and enforces scopes/authorities. Spring Security can be configured with JWT or opaque token introspection to protect API resources.` },
+
+{ cat:"REST & Security", tag:"tag-rest", q:"132. How do you implement role-based access control in Spring Security?",
+  ans:`Assign GrantedAuthority values to authenticated principal, configure antMatchers or method-level @PreAuthorize/@Secured expressions using roles, and ensure role prefixing matches the security configuration.` },
+
+{ cat:"REST & Security", tag:"tag-rest", q:"133. What is the purpose of SecurityContextHolder?",
+  ans:`SecurityContextHolder stores the currently authenticated user's SecurityContext for the active thread, allowing secure access to authentication and authority details anywhere in the code.` },
+
+{ cat:"REST & Security", tag:"tag-rest", q:"134. How do you secure endpoints with HTTPS in Spring Boot?",
+  ans:`Configure server.ssl properties with keystore and certificate details, or terminate TLS at a load balancer/reverse proxy. Always use HTTPS for any authentication or sensitive data exchange.` },
+
+{ cat:"REST & Security", tag:"tag-rest", q:"135. How do you handle authentication failures in Spring Security?",
+  ans:`Customize AuthenticationFailureHandler or exception handling in SecurityFilterChain; return a structured error response, log the failure reason, and avoid leaking sensitive details.` },
+
+{ cat:"REST & Security", tag:"tag-rest", q:"136. How do you configure session management in Spring Security?",
+  ans:`Use sessionManagement() in HttpSecurity to enforce stateless sessions, maximum sessions, session fixation protection, or custom session creation policies.` },
+
+{ cat:"REST & Security", tag:"tag-rest", q:"137. How do you secure file uploads?",
+  ans:`Validate file type and size, store uploads outside web root, scan for malware, and enforce authentication/authorization before handling the file payload.` },
+
+{ cat:"REST & Security", tag:"tag-rest", q:"138. How do you perform input validation in Spring Boot?",
+  ans:`Use @Valid/@Validated with Bean Validation annotations like @NotNull, @Size, @Pattern, and handle BindingResult or MethodArgumentNotValidException for structured validation responses.` },
+
+{ cat:"REST & Security", tag:"tag-rest", q:"139. What is rate limiting and how do you implement it in APIs?",
+  ans:`Rate limiting caps client request volume to protect services. Implement with API gateway rules, custom servlet filters, or Redis-backed counters/token buckets to reject or delay excess requests.` },
+
+{ cat:"REST & Security", tag:"tag-rest", q:"140. How do you prevent SQL injection in Spring applications?",
+  ans:`Use prepared statements, Spring Data/JPA parameter binding, and avoid concatenating user input into SQL strings. Also validate and sanitize inputs when appropriate.` },
+
+{ cat:"REST & Security", tag:"tag-rest", q:"141. What is secure coding for REST APIs?",
+  ans:`Use authentication/authorization, validate inputs, sanitize outputs, use HTTPS, handle errors safely, and avoid exposing sensitive data. Follow least privilege and secure defaults.` },
+
+{ cat:"REST & Security", tag:"tag-rest", q:"142. How do you design a safe public API contract?",
+  ans:`Define stable versioned endpoints, document required inputs/outputs, provide clear error codes, limit data exposure, and design for idempotency and backward compatibility.` },
+
+{ cat:"REST & Security", tag:"tag-rest", q:"143. How do you implement audit logging for sensitive operations?",
+  ans:`Log who did what, when, and where without recording secrets. Use structured logs or an audit store, correlate with user/session identifiers, and ensure logs are tamper-resistant.` },
+
+// CI/CD & DevOps (144-148)
+{ cat:"System Design", tag:"tag-devops", q:"144. What is CI/CD and why is it important?",
+  ans:`CI/CD automates building, testing, and deploying code changes. It reduces manual errors, shortens feedback loops, and enables more frequent, reliable software delivery.` },
+
+{ cat:"System Design", tag:"tag-devops", q:"145. What is the difference between Continuous Integration and Continuous Deployment?",
+  ans:`Continuous Integration means merging code changes frequently and running automated tests. Continuous Deployment means automatically deploying every successful change to production, while Continuous Delivery means changes are production-ready and can be deployed on demand.` },
+
+{ cat:"System Design", tag:"tag-devops", q:"146. What tools have you used for CI/CD pipelines?",
+  ans:`Common tools: Jenkins, GitHub Actions, GitLab CI, CircleCI, Azure DevOps, and Travis CI. Mention build tools like Maven/Gradle and artifact registries such as Nexus or Artifactory.` },
+
+{ cat:"System Design", tag:"tag-devops", q:"147. How do you ensure rollback capability in deployments?",
+  ans:`Keep versioned artifacts, use deployment strategies like blue/green or canary, and automate rollback procedures. Validate health checks so failures trigger rollbacks or route traffic away from bad instances.` },
+
+{ cat:"System Design", tag:"tag-devops", q:"148. How do you monitor application health after deployment?",
+  ans:`Use metrics, logs, traces, and alerts. Monitor response times, error rates, resource usage, and business metrics, and connect them to alerting/incident response so issues are detected quickly.` },
+
+// Microservices (149-159)
+{ cat:"System Design", tag:"tag-micro", q:"149. What defines a microservice architecture?",
+  ans:`Microservices are independently deployable services organized around business capabilities, communicating over lightweight protocols, with decentralized data management and independent scaling.` },
+
+{ cat:"System Design", tag:"tag-micro", q:"150. How do microservices communicate with each other?",
+  ans:`They communicate via APIs, typically REST/JSON over HTTP, gRPC, or messaging systems like Kafka/RabbitMQ. Use synchronous calls for request/response and asynchronous messaging for loose coupling and resilience.` },
+
+{ cat:"System Design", tag:"tag-micro", q:"151. What is service discovery and why is it needed?",
+  ans:`Service discovery tracks available service instances and routes calls to healthy targets. It is needed because instances scale dynamically and clients should not hard-code service addresses.` },
+
+{ cat:"System Design", tag:"tag-micro", q:"152. What is an API Gateway and what problems does it solve?",
+  ans:`An API Gateway is a single entry point for external clients. It handles routing, authentication, rate limiting, request aggregation, and protocol translation between clients and microservices.` },
+
+{ cat:"System Design", tag:"tag-micro", q:"153. How do you manage transactions across microservices?",
+  ans:`Use eventual consistency patterns like Sagas, compensating transactions, or orchestration/choreography instead of distributed two-phase commit. Design services to own local transactions and coordinate state through events.` },
+
+{ cat:"System Design", tag:"tag-micro", q:"154. What are the advantages of containerization in microservices?",
+  ans:`Containers provide lightweight packaging, consistent runtime environments, and isolation. They simplify deployment, scaling, and platform portability for microservices.` },
+
+{ cat:"System Design", tag:"tag-micro", q:"155. What are some common microservices anti-patterns?",
+  ans:`Common anti-patterns include database per service without clear ownership, chatty synchronous communication, distributed monoliths, and unbounded distributed transactions that hurt reliability and performance.` },
+
+{ cat:"System Design", tag:"tag-micro", q:"156. How do you handle versioning in microservice APIs?",
+  ans:`Use versioned endpoints or content negotiation, maintain backward compatibility, and deploy new versions alongside old ones. Use clear deprecation policies and communicate changes to clients.` },
+
+{ cat:"System Design", tag:"tag-micro", q:"157. What is circuit breaker in microservices and why use it?",
+  ans:`A circuit breaker prevents repeated calls to failing services by temporarily opening after errors exceed thresholds. It improves resilience by failing fast and allowing downstream recovery without cascading failures.` },
+
+{ cat:"System Design", tag:"tag-micro", q:"158. How do you implement distributed tracing?",
+  ans:`Propagate trace IDs through service calls, capture spans in each service, and send traces to a system like Jaeger or Zipkin. Use instrumentation libraries and consistent headers for end-to-end visibility.` },
+
+{ cat:"System Design", tag:"tag-micro", q:"159. How do you handle config management for many microservices?",
+  ans:`Use centralized configuration management like Spring Cloud Config, Consul, or Kubernetes ConfigMaps/Secrets. Keep common settings in a shared store, support overrides per environment, and secure sensitive values.` },
+
+// Algorithms (160-172)
+{ cat:"System Design", tag:"tag-algo", q:"160. What is time complexity and why does it matter?",
+  ans:`Time complexity describes how algorithm runtime grows with input size. It matters because it predicts scalability and helps compare solutions for performance under large data volumes.` },
+
+{ cat:"System Design", tag:"tag-algo", q:"161. What is the difference between O(n) and O(n^2)?",
+  ans:`O(n) grows linearly with input size, while O(n^2) grows quadratically. O(n^2) becomes much slower than O(n) for large inputs, so linear algorithms scale better.` },
+
+{ cat:"System Design", tag:"tag-algo", q:"162. How do you choose a data structure for a problem?",
+  ans:`Choose based on operations needed: arrays for indexed access, lists for dynamic insertion, maps for lookups, sets for uniqueness, queues/stacks for ordering, and trees/graphs for hierarchical or relationship data.` },
+
+{ cat:"System Design", tag:"tag-algo", q:"163. What is a stack and when do you use it?",
+  ans:`A stack is LIFO (last-in, first-out). Use it for recursion simulation, expression evaluation, parsing, backtracking, and undo functionality.` },
+
+{ cat:"System Design", tag:"tag-algo", q:"164. What is a queue and when is it useful?",
+  ans:`A queue is FIFO (first-in, first-out). Use it for task scheduling, breadth-first search, producer-consumer workflows, and buffering asynchronous events.` },
+
+{ cat:"System Design", tag:"tag-algo", q:"165. What is the difference between ArrayList and LinkedList?",
+  ans:`ArrayList has fast random access and uses contiguous memory, but insertions/removals in the middle are slower. LinkedList has constant-time insert/remove at ends or known positions but slower random access due to traversal.` },
+
+{ cat:"System Design", tag:"tag-algo", q:"166. What is binary search and what requirement does it have?",
+  ans:`Binary search divides a sorted array in half repeatedly to find a value in O(log n). It requires a sorted collection and direct indexing access.` },
+
+{ cat:"System Design", tag:"tag-algo", q:"167. Describe merge sort and its complexity.",
+  ans:`Merge sort recursively divides the array, sorts halves, and merges them. It has O(n log n) time complexity and stable behavior, with O(n) extra space for merging.` },
+
+{ cat:"System Design", tag:"tag-algo", q:"168. What is a hash table and when is it useful?",
+  ans:`A hash table maps keys to values using a hash function for near-constant average-time lookup, insert, and delete. It is useful for fast membership tests and dictionary-style access.` },
+
+{ cat:"System Design", tag:"tag-algo", q:"169. What is dynamic programming?",
+  ans:`Dynamic programming solves problems by breaking them into overlapping subproblems and caching results. Use it when a problem has optimal substructure and repeated computations.` },
+
+{ cat:"System Design", tag:"tag-algo", q:"170. How do you detect cycles in a graph?",
+  ans:`Use DFS with recursion stack tracking for directed graphs or union-find for undirected graphs. A back-edge in DFS indicates a cycle in directed graphs.` },
+
+{ cat:"System Design", tag:"tag-algo", q:"171. How do you find the shortest path in a weighted graph?",
+  ans:`Use Dijkstra's algorithm for non-negative weights or Bellman-Ford when negative weights are present. For all-pairs shortest path use Floyd-Warshall.` },
+
+{ cat:"System Design", tag:"tag-algo", q:"172. What is Big O notation versus Big Omega?",
+  ans:`Big O describes an upper bound on growth (worst-case or asymptotic limit). Big Omega describes a lower bound (best-case or asymptotic minimum).` },
+
+// SQL & Database (173-182)
+{ cat:"Database & SQL", tag:"tag-db", q:"173. What is normalization and why is it used?",
+  ans:`Normalization organizes data into tables to reduce redundancy and improve integrity. It makes updates easier and prevents anomalies by enforcing relationships between tables.` },
+
+{ cat:"Database & SQL", tag:"tag-db", q:"174. What are ACID properties?",
+  ans:`ACID stands for Atomicity, Consistency, Isolation, Durability. Together they ensure reliable transaction processing and data integrity in databases.` },
+
+{ cat:"Database & SQL", tag:"tag-db", q:"175. What is the difference between SQL and NoSQL?",
+  ans:`SQL databases are relational and schema-based, ideal for structured data and complex joins. NoSQL databases are schema-flexible and built for scalability, often using key-value, document, column, or graph models.` },
+
+{ cat:"Database & SQL", tag:"tag-db", q:"176. What is an index and how does it improve query performance?",
+  ans:`An index is a data structure that allows fast lookup of rows by key values, much like a book index. It reduces full-table scans and speeds up searches, but adds overhead for writes and storage.` },
+
+{ cat:"Database & SQL", tag:"tag-db", q:"177. What is a JOIN and what types are common?",
+  ans:`JOIN combines rows from two tables based on related columns. Common types are INNER JOIN, LEFT JOIN, RIGHT JOIN, and FULL OUTER JOIN for different matching semantics.` },
+
+{ cat:"Database & SQL", tag:"tag-db", q:"178. How do you prevent SQL injection?",
+  ans:`Use prepared statements or parameterized queries, avoid string concatenation with user input, and validate or escape inputs when necessary. ORM frameworks also help if used correctly.` },
+
+{ cat:"Database & SQL", tag:"tag-db", q:"179. What is a transaction isolation level?",
+  ans:`Isolation levels control visibility of concurrent transactions and the phenomena they can see: READ UNCOMMITTED, READ COMMITTED, REPEATABLE READ, and SERIALIZABLE. Higher isolation reduces anomalies but may reduce concurrency.` },
+
+{ cat:"Database & SQL", tag:"tag-db", q:"180. How does indexing affect inserts and updates?",
+  ans:`Indexes speed reads but slow inserts and updates because the index structures must also be maintained. Use indexes selectively on frequently searched columns, not every field.` },
+
+{ cat:"Database & SQL", tag:"tag-db", q:"181. What is denormalization and when is it appropriate?",
+  ans:`Denormalization intentionally duplicates data to improve read performance or simplify queries. It is appropriate when read speed matters more than write complexity and you can manage consistency.
+` },
+
+{ cat:"Database & SQL", tag:"tag-db", q:"182. What is a database transaction log?",
+  ans:`A transaction log records all changes to the database to support recovery, rollback, and replication. It ensures durability and enables the database to restore a consistent state after crashes.` }];
 
 // ─── CONFIG ─────────────────────────────────────────
 const CATS = ["All", ...new Set(Q.map(q => q.cat))];
